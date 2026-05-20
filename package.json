@@ -13,9 +13,9 @@
   "license": "ISC",
   "author": "Quentin, Kaan, Timothé",
   "type": "module",
-  "main": "/src/index.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "dev": "nodemon /src/index.ts",
+    "dev": "nodemon src/index.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +23,7 @@
     "express": "^5.2.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
