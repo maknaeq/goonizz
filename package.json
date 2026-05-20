@@ -1,0 +1,28 @@
+{
+  "name": "goonizz",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/maknaeq/goonizz#readme",
+  "bugs": {
+    "url": "https://github.com/maknaeq/goonizz/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maknaeq/goonizz.git"
+  },
+  "license": "ISC",
+  "author": "Quentin, Kaan, Timothé",
+  "type": "commonjs",
+  "main": "/src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2"
+  }
+}
