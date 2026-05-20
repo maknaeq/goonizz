@@ -12,17 +12,19 @@
   },
   "license": "ISC",
   "author": "Quentin, Kaan, Timothé",
-  "type": "commonjs",
+  "type": "module",
   "main": "/src/index.ts",
   "scripts": {
+    "dev": "nodemon /src/index.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^5.2.1",
-    "typescript": "^6.0.3"
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
   }
 }
