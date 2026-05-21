@@ -22,9 +22,12 @@
   },
   "dependencies": {
     "express": "^5.2.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^1.0.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2"
   }
