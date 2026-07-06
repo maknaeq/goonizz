@@ -1,10 +1,29 @@
-import express from "express"
+import 'reflect-metadata';
+import express from 'express';
+import { datasource } from './datasource.js';
+import { userRouter } from './routes/user.routes.js';
 
-const app = express()
-const port = 3000
+const port = process.env.PORT || 3300;
 
-app.get("/", (req, res) => {
-    res.send({message: "Hello World!"})
-})
+async function main() {
+    await datasource.initialize();
 
-app.listen(port, () => console.log("Server started on port 3000"))
+    const app = express();
+    app.use(express.json());
+
+    app.get('/', (req, res) => {
+        res.status(200).json({ message: 'Hello World!'});
+    })
+
+    app.use('/users', userRouter);
+
+    app.use((req, res) => {
+        res.status(404).json({ errors: ['Not Found!'] });
+    })
+
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
+
+main();
