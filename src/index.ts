@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import express from 'express';
 import { datasource } from './datasource.js';
 import { userRouter } from './routes/user.routes.js';
+import { quizzRouter } from './routes/quizz.routes.js';
 
 const port = process.env.PORT || 3300;
 
@@ -16,6 +17,7 @@ async function main() {
     })
 
     app.use('/users', userRouter);
+    app.use('/quizzs', quizzRouter);
 
     app.use((req, res) => {
         res.status(404).json({ errors: ['Not Found!'] });
