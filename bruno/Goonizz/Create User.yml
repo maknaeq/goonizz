@@ -6,16 +6,15 @@ info:
 http:
   method: POST
   url: "{{BASE_URL}}users"
+  body:
+    type: json
+    data: |-
+      {                  
+          "email": "user@example.com",                       
+          "password": "password123",                                   
+          "role": "user"                                          
+      }
   auth: inherit
-  body: json
-
-body:
-  json: |-
-    {
-      "email": "user@example.com",
-      "password": "password123",
-      "role": "user"
-    }
 
 settings:
   encodeUrl: true
