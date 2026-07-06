@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { User } from '../entities/User.js';
+import { CreateUserDto } from '../dtos/CreateUserDto.js';
 
 export async function getUsers(req: Request, res: Response) {
     const users = await User.find();
@@ -7,14 +10,18 @@ export async function getUsers(req: Request, res: Response) {
 }
 
 export async function createUser(req: Request, res: Response) {
-    const { email, password, role } = req.body;
+    const dto = plainToInstance(CreateUserDto, req.body);
+    const validationErrors = await validate(dto);
 
-    if (!email || !password) {
-        res.status(400).json({ errors: ['email and password are required'] });
+    if (validationErrors.length > 0) {
+        const errors = validationErrors.flatMap((error) =>
+            Object.values(error.constraints ?? {})
+        );
+        res.status(400).json({ errors });
         return;
     }
 
-    const user = User.create({ email, password, role });
+    const user = User.create({ email: dto.email, password: dto.password, role: dto.role });
     await user.save();
 
     const { password: _password, ...userWithoutPassword } = user;

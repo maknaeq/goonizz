@@ -6,6 +6,13 @@ import {
     CreateDateColumn,
     UpdateDateColumn
 } from 'typeorm';
+import {IsDate, IsEmail, IsEnum, MinLength} from "class-validator";
+
+export enum UserRole {
+    USER = "user",
+    CONTRIBUTOR = "contributor",
+    ADMIN = "admin",
+}
 
 @Entity()
 export class User extends  BaseEntity {
@@ -13,17 +20,22 @@ export class User extends  BaseEntity {
     id!: number;
 
     @Column()
+    @IsEmail()
     email!: string;
 
     @Column()
+    @MinLength(8)
     password!: string;
 
-    @Column({ default: "user" })
-    role: "user" | "contributor" | "admin" = "user";
+    @Column({ type: "simple-enum", enum: UserRole, default: UserRole.USER })
+    @IsEnum(UserRole)
+    role: UserRole = UserRole.USER;
 
     @CreateDateColumn()
+    @IsDate()
     createdAt!: Date;
 
     @UpdateDateColumn()
+    @IsDate()
     updatedAt!: Date;
 }
