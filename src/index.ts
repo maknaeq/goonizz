@@ -21,7 +21,7 @@ async function main() {
         res.status(404).json({ errors: ['Not Found!'] });
     })
 
-    app.listen(port, () => {
+    app.listen({ port, host: '0.0.0.0' }, () => {
         console.log(`Server is running on port ${port}`);
     });
 }
