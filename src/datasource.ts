@@ -5,5 +5,5 @@ export const datasource: DataSource = new DataSource({
     database : process.env.DB_PATH || "./data/db/database.sqlite",
     logging: true,
     synchronize: true,
-    entities: [__dirname + "/entities/*.{ts,js}"],
+    entities: [import.meta.dirname + "/entities/*.{ts,js}"],
 });
