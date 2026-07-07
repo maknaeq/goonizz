@@ -13,6 +13,7 @@ async function main() {
     const app = express();
     app.use(express.json());
     app.use(cookieParser());
+    app.use('/uploads', express.static('uploads'));
 
     app.get('/', (req, res) => {
         res.status(200).json({ message: 'Hello World!'});
@@ -23,6 +24,10 @@ async function main() {
 
     app.use((req, res) => {
         res.status(404).json({ errors: ['Not Found!'] });
+    })
+
+    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        res.status(400).json({ errors: [err.message] });
     })
 
     app.listen({ port, host: '0.0.0.0' }, () => {

@@ -4,9 +4,12 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    UpdateDateColumn
+    UpdateDateColumn,
+    ManyToOne,
+    RelationId
 } from 'typeorm';
 import {IsDate, IsEmail, IsEnum, MinLength} from "class-validator";
+import { Media } from './Media.js';
 
 export enum UserRole {
     USER = "user",
@@ -30,6 +33,12 @@ export class User extends  BaseEntity {
     @Column({ type: "simple-enum", enum: UserRole, default: UserRole.USER })
     @IsEnum(UserRole)
     role: UserRole = UserRole.USER;
+
+    @ManyToOne(() => Media, { nullable: true, onDelete: 'SET NULL' })
+    avatar?: Media;
+
+    @RelationId((user: User) => user.avatar)
+    avatarId?: number;
 
     @CreateDateColumn()
     @IsDate()

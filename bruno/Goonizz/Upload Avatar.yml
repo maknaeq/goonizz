@@ -1,0 +1,44 @@
+info:
+  name: Upload Avatar
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{BASE_URL}}users/avatar"
+  body:
+    type: multipart-form
+    data:
+      - name: avatar
+        type: file
+        value:
+          - fixtures/avatar-test.png
+        contentType: image/png
+  auth: inherit
+
+docs: |-
+  Run "Sign In" first so this request is authenticated. The uploaded
+  image is resized server-side to 256x256 webp and stored as a Media
+  entity linked to the user.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 200", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return the resized avatar as a Media object", function() {
+          const avatar = res.getBody().avatar;
+          expect(avatar).to.be.an('object');
+          expect(avatar.width).to.equal(256);
+          expect(avatar.height).to.equal(256);
+          expect(avatar.mimetype).to.equal('image/webp');
+        });

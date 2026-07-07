@@ -7,10 +7,11 @@ import { CreateUserDto } from '../dtos/CreateUserDto.js';
 import { CreateTokenDto } from '../dtos/CreateTokenDto.js';
 import { hashPassword } from '../utils/hash.js';
 import { JWT_SECRET } from '../config.js';
+import { createMedia, deleteMedia } from '../utils/imageUpload.js';
 import '../types/express.js';
 
 export async function getUsers(req: Request, res: Response) {
-    const users = await User.find();
+    const users = await User.find({ relations: { avatar: true } });
     res.status(200).json(users.map(({ password, ...user }) => user));
 }
 
@@ -67,6 +68,26 @@ export async function createToken(req: Request, res: Response) {
 export async function deleteToken(req: Request, res: Response) {
     res.clearCookie('token');
     res.status(204).send();
+}
+
+export async function uploadAvatar(req: Request, res: Response) {
+    if (!req.file) {
+        res.status(400).json({ errors: ['No file uploaded'] });
+        return;
+    }
+
+    const user = req.user!;
+    const previousAvatar = user.avatar;
+
+    user.avatar = await createMedia(req.file.buffer, 'avatars', { width: 256, height: 256 });
+    await user.save();
+
+    if (previousAvatar) {
+        await deleteMedia(previousAvatar);
+    }
+
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json(userWithoutPassword);
 }
 
 export function getPublic(req: Request, res: Response) {

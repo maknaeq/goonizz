@@ -14,7 +14,7 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
 
     try {
         const payload = jwt.verify(token, JWT_SECRET) as { userId: number };
-        const user = await User.findOneBy({ id: payload.userId });
+        const user = await User.findOne({ where: { id: payload.userId }, relations: { avatar: true } });
 
         if (!user) {
             res.status(401).json({ errors: ['Not authenticated'] });
