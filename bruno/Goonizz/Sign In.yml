@@ -1,0 +1,35 @@
+info:
+  name: Sign In
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{BASE_URL}}users/tokens"
+  body:
+    type: json
+    data: |-
+      {
+          "email": "user@example.com",
+          "password": "password123"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 201", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should set a token cookie", function() {
+          const setCookie = res.getHeader('set-cookie');
+          expect(setCookie).to.not.be.undefined;
+        });

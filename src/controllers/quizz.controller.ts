@@ -1,9 +1,16 @@
 import { Request, Response } from 'express';
 import { Quizz } from '../entities/Quizz.js';
+import '../types/express.js';
+
+function withoutAuthorPassword(quizz: Quizz) {
+    const { author, ...rest } = quizz;
+    const { password, ...authorWithoutPassword } = author;
+    return { ...rest, author: authorWithoutPassword };
+}
 
 export async function getQuizzs(req: Request, res: Response) {
-    const quizzs = await Quizz.find();
-    res.status(200).json(quizzs);
+    const quizzs = await Quizz.find({ relations: { author: true } });
+    res.status(200).json(quizzs.map(withoutAuthorPassword));
 }
 
 export async function createQuizz(req: Request, res: Response) {
@@ -14,8 +21,8 @@ export async function createQuizz(req: Request, res: Response) {
         return;
     }
 
-    const quizz = Quizz.create({ title, description, status });
+    const quizz = Quizz.create({ title, description, status, author: req.user! });
     await quizz.save();
 
-    res.status(201).json(quizz);
+    res.status(201).json(withoutAuthorPassword(quizz));
 }

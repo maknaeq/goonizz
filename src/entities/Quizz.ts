@@ -4,8 +4,11 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    UpdateDateColumn
+    UpdateDateColumn,
+    ManyToOne,
+    RelationId
 } from 'typeorm';
+import { User } from './User.js';
 
 @Entity()
 export class Quizz extends BaseEntity {
@@ -20,6 +23,12 @@ export class Quizz extends BaseEntity {
 
     @Column({ default: "draft" })
     status: "draft" | "published" | "archived" = "draft";
+
+    @ManyToOne(() => User)
+    author!: User;
+
+    @RelationId((quizz: Quizz) => quizz.author)
+    authorId!: number;
 
     @CreateDateColumn()
     createdAt!: Date;

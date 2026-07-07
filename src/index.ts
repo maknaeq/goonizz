@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { datasource } from './datasource.js';
 import { userRouter } from './routes/user.routes.js';
 import { quizzRouter } from './routes/quizz.routes.js';
@@ -11,6 +12,7 @@ async function main() {
 
     const app = express();
     app.use(express.json());
+    app.use(cookieParser());
 
     app.get('/', (req, res) => {
         res.status(200).json({ message: 'Hello World!'});

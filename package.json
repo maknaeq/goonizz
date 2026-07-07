@@ -24,12 +24,16 @@
     "better-sqlite3": "^12.11.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^1.0.0"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
