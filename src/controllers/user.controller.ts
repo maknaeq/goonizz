@@ -27,7 +27,7 @@ export async function createUser(req: Request, res: Response) {
         return;
     }
 
-    const user = User.create({ email: dto.email, password: hashPassword(dto.password), role: dto.role });
+    const user = User.create({ email: dto.email, password: hashPassword(dto.password) });
     await user.save();
 
     const { password: _password, ...userWithoutPassword } = user;

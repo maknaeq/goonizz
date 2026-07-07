@@ -1,5 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, MinLength } from "class-validator";
-import { UserRole } from "../entities/User.js";
+import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
 
 export class CreateUserDto {
     @IsNotEmpty()
@@ -9,8 +8,4 @@ export class CreateUserDto {
     @IsNotEmpty()
     @MinLength(8)
     password!: string;
-
-    @IsOptional()
-    @IsEnum(UserRole)
-    role?: UserRole;
 }
