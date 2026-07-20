@@ -7,6 +7,7 @@ import {
     RelationId
 } from 'typeorm';
 import { Question } from './Question.js';
+import type { Question as QuestionEntity } from './Question.js';
 
 @Entity()
 export class Choice extends BaseEntity {
@@ -20,7 +21,7 @@ export class Choice extends BaseEntity {
     isCorrect: boolean = false;
 
     @ManyToOne(() => Question, { onDelete: 'CASCADE' })
-    question!: Question;
+    question!: QuestionEntity;
 
     @RelationId((choice: Choice) => choice.question)
     questionId!: number;

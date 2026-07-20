@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { User } from './User.js';
 import { Question } from './Question.js';
+import type { Question as QuestionEntity } from './Question.js';
 
 @Entity()
 export class Quizz extends BaseEntity {
@@ -33,7 +34,7 @@ export class Quizz extends BaseEntity {
     authorId!: number;
 
     @OneToMany(() => Question, (question) => question.quizz)
-    questions!: Question[];
+    questions!: QuestionEntity[];
 
     @CreateDateColumn()
     createdAt!: Date;

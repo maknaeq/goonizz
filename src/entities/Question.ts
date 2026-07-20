@@ -10,7 +10,9 @@ import {
     OneToMany
 } from 'typeorm';
 import { Quizz } from './Quizz.js';
+import type { Quizz as QuizzEntity } from './Quizz.js';
 import { Choice } from './Choice.js';
+import type { Choice as ChoiceEntity } from './Choice.js';
 
 @Entity()
 export class Question extends BaseEntity {
@@ -24,13 +26,13 @@ export class Question extends BaseEntity {
     order: number = 0;
 
     @ManyToOne(() => Quizz, { onDelete: 'CASCADE' })
-    quizz!: Quizz;
+    quizz!: QuizzEntity;
 
     @RelationId((question: Question) => question.quizz)
     quizzId!: number;
 
     @OneToMany(() => Choice, (choice) => choice.question)
-    choices!: Choice[];
+    choices!: ChoiceEntity[];
 
     @CreateDateColumn()
     createdAt!: Date;
