@@ -11,6 +11,9 @@ lerna-debug.log*
 # User-uploaded files
 uploads/
 
+# Resized image cache
+cache/
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
