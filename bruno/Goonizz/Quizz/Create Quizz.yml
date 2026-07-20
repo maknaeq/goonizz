@@ -1,0 +1,41 @@
+info:
+  name: Create Quizz
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}quizzs"
+  body:
+    type: json
+    data: |-
+      {
+          "title": "Culture generale",
+          "description": "Un petit quizz de culture generale"
+      }
+  auth: inherit
+
+docs: |-
+  Run "Sign In" first so this request is authenticated. The created
+  quizz's id is stored in the `quizzId` variable and reused by the
+  other requests in this folder.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 201", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the created quizz", function() {
+          const body = res.getBody();
+          expect(body).to.have.property('id');
+          bru.setVar("quizzId", body.id);
+        });

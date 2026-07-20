@@ -1,0 +1,54 @@
+info:
+  name: Play as Host
+  type: websocket
+  seq: 1
+
+websocket:
+  url: "{{WS_BASE_URL}}"
+  headers:
+    - name: Cookie
+      value: "token={{token}}"
+  auth: none
+  message:
+    type: json
+    data: |-
+      {
+        "type": "room:create",
+        "requestId": "1",
+        "payload": { "quizzId": {{quizzId}} }
+      }
+
+docs: |-
+  Bruno's WebSocket client only runs in the desktop app (not via the `bru` CLI),
+  and one Bruno ws-request = one persistent connection where you send messages
+  manually, one at a time, from the app's message box — it's not a
+  request/response pair like the HTTP items above.
+
+  IMPORTANT: unlike HTTP requests, Bruno's WS client does NOT use the shared
+  cookie jar (`auth: inherit` does nothing here) — the auth cookie is sent as
+  an explicit `Cookie` header instead, using the `{{token}}` variable. "Sign In"
+  now stores that token in a variable automatically, so just run "Sign In"
+  before connecting and it'll be picked up. If you get a 401 on connect, re-run
+  "Sign In" first.
+
+  Run "Sign In" then "Create Quizz" first (`quizzId` must be set — you must be
+  the quizz's author and it needs at least one question). Then, in the
+  desktop app:
+
+  1. Click "Connect" — the pre-filled message above is `room:create`, sent it.
+     The server responds with
+     { "type": "response", "requestId": "1", "ok": true, "payload": { "code": "ABC123" } }
+     Share that code with whoever runs "Play as Player" below.
+
+  2. Once they've joined (you'll receive a `room:players` push), send:
+     { "type": "room:start", "requestId": "2", "payload": { "code": "ABC123" } }
+
+  3. After a player answers, send this to reveal the answer and move on
+     (repeat for every question, then the server sends `room:finished`):
+     { "type": "room:next", "requestId": "3", "payload": { "code": "ABC123" } }
+
+  Replace "ABC123" with the actual code returned by room:create.
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0

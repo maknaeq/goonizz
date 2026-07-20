@@ -6,9 +6,11 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
-    RelationId
+    RelationId,
+    OneToMany
 } from 'typeorm';
 import { User } from './User.js';
+import { Question } from './Question.js';
 
 @Entity()
 export class Quizz extends BaseEntity {
@@ -29,6 +31,9 @@ export class Quizz extends BaseEntity {
 
     @RelationId((quizz: Quizz) => quizz.author)
     authorId!: number;
+
+    @OneToMany(() => Question, (question) => question.quizz)
+    questions!: Question[];
 
     @CreateDateColumn()
     createdAt!: Date;

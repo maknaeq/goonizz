@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
 import jwt from 'jsonwebtoken';
 import { User } from '../entities/User.js';
 import { CreateUserDto } from '../dtos/CreateUserDto.js';
@@ -8,6 +6,7 @@ import { CreateTokenDto } from '../dtos/CreateTokenDto.js';
 import { hashPassword } from '../utils/hash.js';
 import { JWT_SECRET } from '../config.js';
 import { createMedia, deleteMedia } from '../utils/imageUpload.js';
+import { validateDto } from '../utils/validation.js';
 import '../types/express.js';
 
 export async function getUsers(req: Request, res: Response) {
@@ -16,13 +15,9 @@ export async function getUsers(req: Request, res: Response) {
 }
 
 export async function createUser(req: Request, res: Response) {
-    const dto = plainToInstance(CreateUserDto, req.body);
-    const validationErrors = await validate(dto);
+    const { dto, errors } = await validateDto(CreateUserDto, req.body);
 
-    if (validationErrors.length > 0) {
-        const errors = validationErrors.flatMap((error) =>
-            Object.values(error.constraints ?? {})
-        );
+    if (errors.length > 0) {
         res.status(400).json({ errors });
         return;
     }
@@ -35,13 +30,9 @@ export async function createUser(req: Request, res: Response) {
 }
 
 export async function createToken(req: Request, res: Response) {
-    const dto = plainToInstance(CreateTokenDto, req.body);
-    const validationErrors = await validate(dto);
+    const { dto, errors } = await validateDto(CreateTokenDto, req.body);
 
-    if (validationErrors.length > 0) {
-        const errors = validationErrors.flatMap((error) =>
-            Object.values(error.constraints ?? {})
-        );
+    if (errors.length > 0) {
         res.status(400).json({ errors });
         return;
     }

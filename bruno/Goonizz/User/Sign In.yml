@@ -33,3 +33,10 @@ runtime:
           const setCookie = res.getHeader('set-cookie');
           expect(setCookie).to.not.be.undefined;
         });
+
+        const setCookie = res.getHeader('set-cookie');
+        const token = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+        const match = token?.match(/token=([^;]+)/);
+        if (match) {
+          bru.setVar('token', match[1]);
+        }

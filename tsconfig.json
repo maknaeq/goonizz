@@ -15,5 +15,6 @@
     "noUncheckedSideEffectImports": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true
-  }
+  },
+  "exclude": ["node_modules", "esgi-2605-quiz-main"]
 }

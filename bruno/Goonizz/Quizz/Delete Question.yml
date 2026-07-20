@@ -1,0 +1,27 @@
+info:
+  name: Delete Question
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{BASE_URL}}quizzs/{{quizzId}}/questions/{{questionId}}"
+  auth: inherit
+
+docs: |-
+  Run "Create Question" first so `questionId` is set. Only the quizz's
+  author can delete one of its questions.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 204", function() {
+          expect(res.getStatus()).to.equal(204);
+        });
