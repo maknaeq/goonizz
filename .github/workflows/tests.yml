@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  bruno-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start app stack
+        run: docker compose -f compose.yml up --build -d
+
+      - name: Wait for API to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/ >/dev/null 2>&1; then
+              echo "API is up"
+              exit 0
+            fi
+            echo "Waiting for API..."
+            sleep 2
+          done
+          echo "API did not become ready in time"
+          docker compose -f compose.yml logs
+          exit 1
+
+      - name: Run Bruno tests
+        uses: usebruno/bruno-cli-action@v1
+        with:
+          working-directory: bruno/Goonizz
+          command: 'run --env Local -r'
+
+      - name: Stop app stack
+        if: always()
+        run: docker compose -f compose.yml down -v
