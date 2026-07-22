@@ -8,11 +8,6 @@ http:
   url: "{{BASE_URL}}users"
   auth: inherit
 
-runtime:
-  variables:
-    - name: BASE_URL
-      value: 127.0.0.1:3300/
-
 settings:
   encodeUrl: true
   timeout: 0

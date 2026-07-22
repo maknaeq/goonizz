@@ -2,6 +2,7 @@ info:
   name: Play as Player
   type: websocket
   seq: 2
+  tags: [ws]
 
 websocket:
   url: "{{WS_BASE_URL}}"
