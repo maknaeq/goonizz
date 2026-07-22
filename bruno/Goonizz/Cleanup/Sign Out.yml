@@ -1,0 +1,23 @@
+info:
+  name: Sign Out
+  type: http
+  seq: 1
+
+http:
+  method: DELETE
+  url: "{{BASE_URL}}users/tokens"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 204", function() {
+          expect(res.getStatus()).to.equal(204);
+        });
