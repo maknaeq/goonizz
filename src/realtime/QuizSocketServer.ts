@@ -39,7 +39,7 @@ export class QuizSocketServer {
         callback: (verified: boolean, code?: number, message?: string) => void
     ): void {
         const token = parseCookies(info.req.headers.cookie ?? '').token;
-        verifyUserFromToken(token, {}).then((user) => {
+        verifyUserFromToken(token).then((user) => {
             if (!user) {
                 callback(false, 401, 'Not authenticated');
                 return;
@@ -150,7 +150,7 @@ export class QuizSocketServer {
         const room = this.requireHostRoom(session, payload.code);
 
         const question = room.start();
-        room.broadcast('question:show', publicQuestion(question!));
+        room.broadcast('question:show', publicQuestion(question));
         this.sendResponse(socket, requestId, true, { ok: true });
     }
 

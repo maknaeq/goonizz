@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import { Quizz } from '../entities/Quizz.js';
 import { CreateQuizzDto } from '../dtos/CreateQuizzDto.js';
 import { validateDto } from '../utils/validation.js';
+import { omit } from '../utils/serialize.js';
 import '../types/express.js';
 
 function withoutAuthorPassword(quizz: Quizz) {
     const { author, ...rest } = quizz;
-    const { password, ...authorWithoutPassword } = author;
-    return { ...rest, author: authorWithoutPassword };
+    return { ...rest, author: omit(author, 'password') };
 }
 
 export async function getQuizzs(req: Request, res: Response) {
@@ -33,7 +33,7 @@ export async function getQuizzById(req: Request, res: Response) {
         ...rest,
         questions: questions.map((question) => ({
             ...question,
-            choices: question.choices.map((choice) => (isOwner ? choice : { ...choice, isCorrect: undefined })),
+            choices: question.choices.map((choice) => (isOwner ? choice : omit(choice, 'isCorrect'))),
         })),
     });
 }
