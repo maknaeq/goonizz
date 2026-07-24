@@ -16,7 +16,6 @@ export type RoomState = 'lobby' | 'question' | 'finished';
 
 type Member = {
     email: string;
-    isHost: boolean;
     score: number;
     answeredChoiceIds: number[] | null;
     socket: WebSocket;
@@ -50,11 +49,15 @@ export class Room {
         questions: RoomQuestion[],
         hostSocket: WebSocket
     ) {
+        if (questions.length === 0) {
+            throw new Error('Room requires at least one question');
+        }
+
         this.code = code;
         this.quizzId = quizzId;
         this.hostUserId = hostUserId;
         this.questions = questions;
-        this.members.set(hostUserId, { email: hostEmail, isHost: true, score: 0, answeredChoiceIds: null, socket: hostSocket });
+        this.members.set(hostUserId, { email: hostEmail, score: 0, answeredChoiceIds: null, socket: hostSocket });
     }
 
     isHost(userId: number): boolean {
@@ -70,7 +73,7 @@ export class Room {
     }
 
     addPlayer(userId: number, email: string, socket: WebSocket): void {
-        this.members.set(userId, { email, isHost: false, score: 0, answeredChoiceIds: null, socket });
+        this.members.set(userId, { email, score: 0, answeredChoiceIds: null, socket });
     }
 
     removePlayer(userId: number): void {
@@ -85,16 +88,16 @@ export class Room {
         return this.questions[this.currentQuestionIndex] ?? null;
     }
 
-    start(): RoomQuestion | null {
+    start(): RoomQuestion {
         this.state = 'question';
         this.currentQuestionIndex = 0;
-        return this.currentQuestion();
+        return this.questions[0]!;
     }
 
     submitAnswer(userId: number, choiceIds: number[]): boolean {
         const member = this.members.get(userId);
 
-        if (!member || member.isHost || member.answeredChoiceIds !== null) {
+        if (!member || userId === this.hostUserId || member.answeredChoiceIds !== null) {
             return false;
         }
 
@@ -137,7 +140,9 @@ export class Room {
     }
 
     private players(): Member[] {
-        return Array.from(this.members.values()).filter((member) => !member.isHost);
+        return Array.from(this.members.entries())
+            .filter(([userId]) => userId !== this.hostUserId)
+            .map(([, member]) => member);
     }
 
     private isAllCorrect(correctChoiceIds: Set<number>, answeredChoiceIds: number[]): boolean {

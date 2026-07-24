@@ -8,8 +8,8 @@ import { quizzRouter } from './routes/quizz.routes.js';
 import { mediaRouter } from './routes/media.routes.js';
 import { clearImageCache } from './utils/transformImage.js';
 import { QuizSocketServer } from './realtime/QuizSocketServer.js';
+import { PORT } from './config.js';
 
-const port = process.env.PORT || 3300;
 const CACHE_CLEAR_INTERVAL_MS = 30 * 60 * 1000;
 
 async function main() {
@@ -43,8 +43,8 @@ async function main() {
         clearImageCache().catch((err) => console.error('Failed to clear image cache:', err));
     }, CACHE_CLEAR_INTERVAL_MS);
 
-    httpServer.listen({ port, host: '0.0.0.0' }, () => {
-        console.log(`Server is running on port ${port}`);
+    httpServer.listen({ port: PORT, host: '0.0.0.0' }, () => {
+        console.log(`Server is running on port ${PORT}`);
     });
 }
 

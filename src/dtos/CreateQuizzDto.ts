@@ -1,4 +1,5 @@
-import { IsIn, IsNotEmpty, IsOptional } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional } from "class-validator";
+import { QuizzStatus } from "../entities/Quizz.js";
 
 export class CreateQuizzDto {
     @IsNotEmpty()
@@ -8,6 +9,6 @@ export class CreateQuizzDto {
     description!: string;
 
     @IsOptional()
-    @IsIn(["draft", "published", "archived"])
-    status?: "draft" | "published" | "archived";
+    @IsEnum(QuizzStatus)
+    status?: QuizzStatus;
 }

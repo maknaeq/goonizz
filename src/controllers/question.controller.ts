@@ -8,14 +8,15 @@ import '../types/express.js';
 
 export async function createQuestion(req: Request, res: Response) {
     const quizzId = Number(req.params.quizzId);
-    const quizz = await findOwnedQuizz(quizzId, req.user!.id);
+    const [quizz, { dto, errors }] = await Promise.all([
+        findOwnedQuizz(quizzId, req.user!.id),
+        validateDto(CreateQuestionDto, req.body),
+    ]);
 
     if (!quizz) {
         res.status(404).json({ errors: ['Quizz not found'] });
         return;
     }
-
-    const { dto, errors } = await validateDto(CreateQuestionDto, req.body);
 
     if (errors.length > 0) {
         res.status(400).json({ errors });

@@ -1,10 +1,15 @@
 import { createHash } from 'crypto';
+import { mkdirSync } from 'fs';
 import { access, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import sharp, { FitEnum } from 'sharp';
 import { UPLOADS_ROOT } from './imageUpload.js';
 
 export const CACHE_ROOT = path.join(process.cwd(), 'cache');
+
+mkdirSync(CACHE_ROOT, { recursive: true });
+
+export const VALID_FITS: (keyof FitEnum)[] = ['contain', 'cover', 'fill', 'inside', 'outside'];
 
 export type ResizeOptions = {
     width?: number;
@@ -31,7 +36,6 @@ export async function resolveImagePath(mediaPath: string, options: ResizeOptions
         return sourcePath;
     }
 
-    await mkdir(CACHE_ROOT, { recursive: true });
     const key = createHash('sha256').update(JSON.stringify({ mediaPath, ...options })).digest('hex');
     const cachedPath = path.join(CACHE_ROOT, `${key}.webp`);
 
@@ -45,4 +49,5 @@ export async function resolveImagePath(mediaPath: string, options: ResizeOptions
 
 export async function clearImageCache(): Promise<void> {
     await rm(CACHE_ROOT, { recursive: true, force: true });
+    await mkdir(CACHE_ROOT, { recursive: true });
 }

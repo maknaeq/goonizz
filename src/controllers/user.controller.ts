@@ -7,11 +7,12 @@ import { hashPassword } from '../utils/hash.js';
 import { JWT_SECRET } from '../config.js';
 import { createMedia, deleteMedia } from '../utils/imageUpload.js';
 import { validateDto } from '../utils/validation.js';
+import { omit } from '../utils/serialize.js';
 import '../types/express.js';
 
 export async function getUsers(req: Request, res: Response) {
     const users = await User.find({ relations: { avatar: true } });
-    res.status(200).json(users.map(({ password, ...user }) => user));
+    res.status(200).json(users.map((user) => omit(user, 'password')));
 }
 
 export async function createUser(req: Request, res: Response) {
@@ -25,8 +26,7 @@ export async function createUser(req: Request, res: Response) {
     const user = User.create({ email: dto.email, password: hashPassword(dto.password) });
     await user.save();
 
-    const { password: _password, ...userWithoutPassword } = user;
-    res.status(201).json(userWithoutPassword);
+    res.status(201).json(omit(user, 'password'));
 }
 
 export async function createToken(req: Request, res: Response) {
@@ -52,8 +52,7 @@ export async function createToken(req: Request, res: Response) {
         maxAge: 24 * 60 * 60 * 1000,
     });
 
-    const { password: _password, ...userWithoutPassword } = user;
-    res.status(201).json(userWithoutPassword);
+    res.status(201).json(omit(user, 'password'));
 }
 
 export async function deleteToken(req: Request, res: Response) {
@@ -68,7 +67,7 @@ export async function uploadAvatar(req: Request, res: Response) {
     }
 
     const user = req.user!;
-    const previousAvatar = user.avatar;
+    const previousAvatar = (await User.findOne({ where: { id: user.id }, relations: { avatar: true } }))?.avatar;
 
     user.avatar = await createMedia(req.file.buffer, 'avatars', { width: 256, height: 256 });
     await user.save();
@@ -77,8 +76,7 @@ export async function uploadAvatar(req: Request, res: Response) {
         await deleteMedia(previousAvatar);
     }
 
-    const { password, ...userWithoutPassword } = user;
-    res.status(200).json(userWithoutPassword);
+    res.status(200).json(omit(user, 'password'));
 }
 
 export function getPublic(req: Request, res: Response) {
@@ -86,6 +84,5 @@ export function getPublic(req: Request, res: Response) {
 }
 
 export function getPrivate(req: Request, res: Response) {
-    const { password, ...userWithoutPassword } = req.user!;
-    res.status(200).json({ message: 'This is a private route.', user: userWithoutPassword });
+    res.status(200).json({ message: 'This is a private route.', user: omit(req.user!, 'password') });
 }
