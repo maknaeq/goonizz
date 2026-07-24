@@ -21,7 +21,7 @@ async function main() {
     app.use('/uploads', express.static('uploads'));
 
     app.get('/', (req, res) => {
-        res.status(200).json({ message: 'Hello World!'});
+        res.status(200).json({ message: 'Hello World!!!!'});
     })
 
     app.use('/users', userRouter);
