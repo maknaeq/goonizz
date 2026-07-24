@@ -8,7 +8,6 @@ import {
     ManyToOne,
     RelationId
 } from 'typeorm';
-import {IsDate, IsEmail, IsEnum, MinLength} from "class-validator";
 import { Media } from './Media.js';
 
 export enum UserRole {
@@ -23,15 +22,12 @@ export class User extends  BaseEntity {
     id!: number;
 
     @Column()
-    @IsEmail()
     email!: string;
 
     @Column()
-    @MinLength(8)
     password!: string;
 
     @Column({ type: "simple-enum", enum: UserRole, default: UserRole.USER })
-    @IsEnum(UserRole)
     role: UserRole = UserRole.USER;
 
     @ManyToOne(() => Media, { nullable: true, onDelete: 'SET NULL' })
@@ -41,10 +37,8 @@ export class User extends  BaseEntity {
     avatarId?: number;
 
     @CreateDateColumn()
-    @IsDate()
     createdAt!: Date;
 
     @UpdateDateColumn()
-    @IsDate()
     updatedAt!: Date;
 }

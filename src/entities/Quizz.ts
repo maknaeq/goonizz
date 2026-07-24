@@ -13,6 +13,12 @@ import { User } from './User.js';
 import { Question } from './Question.js';
 import type { Question as QuestionEntity } from './Question.js';
 
+export enum QuizzStatus {
+    DRAFT = "draft",
+    PUBLISHED = "published",
+    ARCHIVED = "archived",
+}
+
 @Entity()
 export class Quizz extends BaseEntity {
     @PrimaryGeneratedColumn()
@@ -24,8 +30,8 @@ export class Quizz extends BaseEntity {
     @Column()
     description!: string;
 
-    @Column({ default: "draft" })
-    status: "draft" | "published" | "archived" = "draft";
+    @Column({ type: "simple-enum", enum: QuizzStatus, default: QuizzStatus.DRAFT })
+    status: QuizzStatus = QuizzStatus.DRAFT;
 
     @ManyToOne(() => User)
     author!: User;

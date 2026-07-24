@@ -7,7 +7,7 @@ import '../types/express.js';
 
 export async function verifyUserFromToken(
     token: string | undefined,
-    relations: FindOptionsRelations<User> = { avatar: true }
+    relations: FindOptionsRelations<User> = {}
 ): Promise<User | null> {
     if (!token) {
         return null;
@@ -35,6 +35,6 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
 }
 
 export async function optionalUser(req: Request, res: Response, next: NextFunction) {
-    req.user = (await verifyUserFromToken(req.cookies?.token, {})) ?? undefined;
+    req.user = (await verifyUserFromToken(req.cookies?.token)) ?? undefined;
     next();
 }
