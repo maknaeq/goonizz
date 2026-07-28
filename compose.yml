@@ -19,6 +19,7 @@ services:
   api:
     build:
       context: .
+      target: dev
     restart: always
     ports:
       - 3000:3000
