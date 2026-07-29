@@ -4,6 +4,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { verifyUserFromToken } from '../middlewares/checkUser.js';
 import { User } from '../entities/User.js';
 import { findOwnedQuizz } from '../utils/quizz.js';
+import { Question } from '../entities/Question.js';
+import { QuizzStatus } from '../entities/Quizz.js';
 import { Room, RoomQuestion } from './Room.js';
 
 type Session = { userId: number; email: string; roomCode?: string };
@@ -74,6 +76,9 @@ export class QuizSocketServer {
                 case 'room:create':
                     await this.handleRoomCreate(socket, session, requestId, payload as { quizzId: number });
                     break;
+                case 'room:create-random':
+                    await this.handleRoomCreateRandom(socket, session, requestId, payload as { categoryIds: number[]; questionCount: number });
+                    break;
                 case 'room:join':
                     this.handleRoomJoin(socket, session, requestId, payload as { code: string });
                     break;
@@ -131,6 +136,69 @@ export class QuizSocketServer {
         this.rooms.set(code, room);
         session.roomCode = code;
         this.sendResponse(socket, requestId, true, { code });
+    }
+
+    private async handleRoomCreateRandom(
+        socket: WebSocket,
+        session: Session,
+        requestId: string | undefined,
+        payload: { categoryIds: number[]; questionCount: number }
+    ): Promise<void> {
+        const { categoryIds, questionCount } = payload;
+
+        if (!Array.isArray(categoryIds) || categoryIds.length === 0 || categoryIds.some((id) => !Number.isInteger(id))) {
+            throw new Error('categoryIds must be a non-empty array of numbers');
+        }
+
+        if (!Number.isInteger(questionCount) || questionCount <= 0) {
+            throw new Error('questionCount must be a positive integer');
+        }
+
+        const pool = await Question.createQueryBuilder('question')
+            .innerJoin('question.quizz', 'quizz')
+            .leftJoinAndSelect('question.choices', 'choice')
+            .where('quizz.status = :status', { status: QuizzStatus.PUBLISHED })
+            .andWhere('question.categoryId IN (:...categoryIds)', { categoryIds })
+            .getMany();
+
+        if (pool.length < questionCount) {
+            throw new Error('Not enough questions in selected categories');
+        }
+
+        const picked = this.pickRandom(pool, questionCount);
+
+        const code = this.generateRoomCode();
+        const room = new Room(
+            code,
+            null,
+            session.userId,
+            session.email,
+            picked.map((question) => ({
+                id: question.id,
+                text: question.text,
+                choices: question.choices.map((choice) => ({
+                    id: choice.id,
+                    text: choice.text,
+                    isCorrect: choice.isCorrect,
+                })),
+            })),
+            socket
+        );
+
+        this.rooms.set(code, room);
+        session.roomCode = code;
+        this.sendResponse(socket, requestId, true, { code });
+    }
+
+    private pickRandom<T>(items: T[], count: number): T[] {
+        const shuffled = [...items];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = shuffled[i]!;
+            shuffled[i] = shuffled[j]!;
+            shuffled[j] = temp;
+        }
+        return shuffled.slice(0, count);
     }
 
     private handleRoomJoin(socket: WebSocket, session: Session, requestId: string | undefined, payload: { code: string }): void {

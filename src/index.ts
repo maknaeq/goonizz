@@ -4,6 +4,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { datasource } from './datasource.js';
 import { userRouter } from './routes/user.routes.js';
+import { categoryRouter } from './routes/category.routes.js';
 import { quizzRouter } from './routes/quizz.routes.js';
 import { mediaRouter } from './routes/media.routes.js';
 import { clearImageCache } from './utils/transformImage.js';
@@ -25,6 +26,7 @@ async function main() {
     })
 
     app.use('/users', userRouter);
+    app.use('/categories', categoryRouter);
     app.use('/quizzs', quizzRouter);
     app.use('/media', mediaRouter);
 

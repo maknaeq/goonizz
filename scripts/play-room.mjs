@@ -1,5 +1,7 @@
 
 //   room:create  { quizzId }         -> { code }     (host only, must own the quizz)
+//   room:create-random { categoryIds, questionCount }
+//                                     -> { code }     (host only, PUBLISHED quizzes, any author)
 //   room:join    { code }            -> { ok }       (broadcasts room:players)
 //   room:start   { code }            -> { ok }       (host only, broadcasts question:show)
 //   answer:submit{ code, choiceIds } -> { ok }
@@ -125,13 +127,18 @@ async function connectAndRegisterCommonHandlers(email, password, extraListeners)
   return { client, rl, isFinished: () => finished };
 }
 
-async function runHost({ email, password, quizz }) {
+async function runHost({ email, password, quizz, categories, count }) {
   const { client, rl, isFinished } = await connectAndRegisterCommonHandlers(email, password, {
     'room:players': (players) => console.log(`\nPlayers in room: ${players.join(', ') || '(none yet)'}`),
     'question:show': printQuestion,
   });
 
-  const { code } = await client.request('room:create', { quizzId: Number(quizz) });
+  const { code } = categories
+    ? await client.request('room:create-random', {
+        categoryIds: categories.split(',').map(Number),
+        questionCount: Number(count),
+      })
+    : await client.request('room:create', { quizzId: Number(quizz) });
   console.log(`Room created! Share this code with your friends: ${code}`);
 
   await rl.question('\nPress enter once everyone has joined to start the game...');
@@ -191,6 +198,7 @@ if (args.role === 'host') {
 } else {
   console.error('Usage:');
   console.error('  node scripts/play-room.mjs host --email <email> --password <password> --quizz <quizzId>');
+  console.error('  node scripts/play-room.mjs host --email <email> --password <password> --categories <id1,id2> --count <n>');
   console.error('  node scripts/play-room.mjs join --email <email> --password <password> --code <roomCode>');
   process.exit(1);
 }

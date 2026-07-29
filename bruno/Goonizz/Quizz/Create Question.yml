@@ -11,6 +11,7 @@ http:
     data: |-
       {
           "text": "Quels langages sont compiles ?",
+          "categoryId": {{categoryId}},
           "choices": [
               { "text": "TypeScript", "isCorrect": true },
               { "text": "Python", "isCorrect": false },
@@ -20,10 +21,7 @@ http:
   auth: inherit
 
 docs: |-
-  Run "Sign In" then "Create Quizz" first (`quizzId` must be set, and
-  you must be the quizz's author). At least 2 choices and at least one
-  correct choice are required. The created question's id is stored in
-  the `questionId` variable for "Delete Question".
+  Run "Sign In", "Create Category" and "Create Quizz" first. Stores the created question's id in `questionId`.
 
 settings:
   encodeUrl: true
