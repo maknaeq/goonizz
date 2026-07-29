@@ -23,6 +23,9 @@ export class Media extends BaseEntity {
     @Column({ nullable: true })
     height?: number;
 
+    @Column({ type: 'float', nullable: true })
+    duration?: number;
+
     @Column()
     size!: number;
 

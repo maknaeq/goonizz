@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { Media } from '../entities/Media.js';
-import { UPLOADS_ROOT, createMedia } from '../utils/media.js';
-import { resolveImagePath, VALID_FITS } from '../utils/transformMedia.js';
-import type { FitEnum } from 'sharp';
-import path from 'path';
+import { createMedia } from '../utils/media.js';
+import { resolveMediaPath } from '../utils/transformMedia.js';
 import '../types/express.js';
 
 export async function getMedia(req: Request, res: Response) {
@@ -14,16 +12,7 @@ export async function getMedia(req: Request, res: Response) {
         return;
     }
 
-    if (!media.mimetype.startsWith('image/')) {
-        res.sendFile(path.join(UPLOADS_ROOT, media.path));
-        return;
-    }
-
-    const width = req.query.width ? Number(req.query.width) : undefined;
-    const height = req.query.height ? Number(req.query.height) : undefined;
-    const fit = VALID_FITS.includes(req.query.fit as keyof FitEnum) ? (req.query.fit as keyof FitEnum) : undefined;
-
-    const filePath = await resolveImagePath(media.path, { width, height, fit });
+    const filePath = await resolveMediaPath(media, req.query as Record<string, unknown>);
     res.sendFile(filePath);
 }
 

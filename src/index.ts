@@ -7,7 +7,7 @@ import { userRouter } from './routes/user.routes.js';
 import { categoryRouter } from './routes/category.routes.js';
 import { quizzRouter } from './routes/quizz.routes.js';
 import { mediaRouter } from './routes/media.routes.js';
-import { clearImageCache } from './utils/transformMedia.js';
+import { clearMediaCache } from './utils/transformMedia.js';
 import { QuizSocketServer } from './realtime/QuizSocketServer.js';
 import { PORT } from './config.js';
 
@@ -42,7 +42,7 @@ async function main() {
     new QuizSocketServer(httpServer);
 
     setInterval(() => {
-        clearImageCache().catch((err) => console.error('Failed to clear image cache:', err));
+        clearMediaCache().catch((err) => console.error('Failed to clear media cache:', err));
     }, CACHE_CLEAR_INTERVAL_MS);
 
     httpServer.listen({ port: PORT, host: '0.0.0.0' }, () => {
