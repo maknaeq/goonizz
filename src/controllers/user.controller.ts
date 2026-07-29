@@ -5,7 +5,7 @@ import { CreateUserDto } from '../dtos/CreateUserDto.js';
 import { CreateTokenDto } from '../dtos/CreateTokenDto.js';
 import { hashPassword } from '../utils/hash.js';
 import { JWT_SECRET } from '../config.js';
-import { createMedia, deleteMedia } from '../utils/imageUpload.js';
+import { createMedia, deleteMedia } from '../utils/media.js';
 import { validateDto } from '../utils/validation.js';
 import { omit } from '../utils/serialize.js';
 import '../types/express.js';
@@ -69,7 +69,10 @@ export async function uploadAvatar(req: Request, res: Response) {
     const user = req.user!;
     const previousAvatar = (await User.findOne({ where: { id: user.id }, relations: { avatar: true } }))?.avatar;
 
-    user.avatar = await createMedia(req.file.buffer, 'avatars', { width: 256, height: 256 });
+    user.avatar = await createMedia(req.file.buffer, 'avatars', req.file.originalname, req.file.mimetype, {
+        width: 256,
+        height: 256,
+    });
     await user.save();
 
     if (previousAvatar) {

@@ -7,7 +7,7 @@ import { userRouter } from './routes/user.routes.js';
 import { categoryRouter } from './routes/category.routes.js';
 import { quizzRouter } from './routes/quizz.routes.js';
 import { mediaRouter } from './routes/media.routes.js';
-import { clearImageCache } from './utils/transformImage.js';
+import { clearImageCache } from './utils/transformMedia.js';
 import { QuizSocketServer } from './realtime/QuizSocketServer.js';
 import { PORT } from './config.js';
 

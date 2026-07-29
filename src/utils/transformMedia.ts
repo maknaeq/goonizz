@@ -3,7 +3,7 @@ import { mkdirSync } from 'fs';
 import { access, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import sharp, { FitEnum } from 'sharp';
-import { UPLOADS_ROOT } from './imageUpload.js';
+import { UPLOADS_ROOT } from './media.js';
 
 export const CACHE_ROOT = path.join(process.cwd(), 'cache');
 
