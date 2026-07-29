@@ -1,0 +1,41 @@
+info:
+  name: Create Category
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}categories"
+  body:
+    type: json
+    data: |-
+      {
+          "name": "Histoire"
+      }
+  auth: inherit
+
+docs: |-
+  Run "Sign In" first so this request is authenticated. The created
+  category's id is stored in the `categoryId` variable and reused by
+  "Create Question" and "Get Quizzs By Category".
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 201", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the created category", function() {
+          const body = res.getBody();
+          expect(body).to.have.property('id');
+          expect(body.name).to.equal('Histoire');
+          bru.setVar("categoryId", body.id);
+        });
