@@ -1,20 +1,9 @@
-import { Type } from "class-transformer";
-import { ArrayMinSize, IsBoolean, IsNotEmpty, ValidateNested } from "class-validator";
-
-export class CreateChoiceDto {
-    @IsNotEmpty()
-    text!: string;
-
-    @IsBoolean()
-    isCorrect!: boolean;
-}
+import { IsNotEmpty } from "class-validator";
 
 export class CreateQuestionDto {
     @IsNotEmpty()
     text!: string;
 
-    @ValidateNested({ each: true })
-    @Type(() => CreateChoiceDto)
-    @ArrayMinSize(2)
-    choices!: CreateChoiceDto[];
+    @IsNotEmpty()
+    correctAnswer!: string;
 }

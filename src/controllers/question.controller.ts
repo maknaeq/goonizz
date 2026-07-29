@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Question } from '../entities/Question.js';
-import { Choice } from '../entities/Choice.js';
 import { CreateQuestionDto } from '../dtos/CreateQuestionDto.js';
 import { findOwnedQuizz } from '../utils/quizz.js';
 import { validateDto } from '../utils/validation.js';
@@ -23,22 +22,18 @@ export async function createQuestion(req: Request, res: Response) {
         return;
     }
 
-    if (!dto.choices.some((choice) => choice.isCorrect)) {
-        res.status(400).json({ errors: ['at least one choice must be correct'] });
-        return;
-    }
-
-    const question = await Question.create({ text: dto.text, quizz }).save();
-    const savedChoices = await Choice.save(
-        dto.choices.map((choice) => Choice.create({ text: choice.text, isCorrect: choice.isCorrect, question }))
-    );
+    const question = await Question.create({
+        text: dto.text,
+        correctAnswer: dto.correctAnswer,
+        quizz,
+    }).save();
 
     res.status(201).json({
         id: question.id,
         text: question.text,
+        correctAnswer: question.correctAnswer,
         order: question.order,
         quizzId: question.quizzId,
-        choices: savedChoices.map(({ id, text, isCorrect }) => ({ id, text, isCorrect })),
     });
 }
 

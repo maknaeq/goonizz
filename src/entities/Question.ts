@@ -6,13 +6,10 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
-    RelationId,
-    OneToMany
+    RelationId
 } from 'typeorm';
 import { Quizz } from './Quizz.js';
 import type { Quizz as QuizzEntity } from './Quizz.js';
-import { Choice } from './Choice.js';
-import type { Choice as ChoiceEntity } from './Choice.js';
 
 @Entity()
 export class Question extends BaseEntity {
@@ -22,6 +19,9 @@ export class Question extends BaseEntity {
     @Column()
     text!: string;
 
+    @Column()
+    correctAnswer!: string;
+
     @Column({ default: 0 })
     order: number = 0;
 
@@ -30,9 +30,6 @@ export class Question extends BaseEntity {
 
     @RelationId((question: Question) => question.quizz)
     quizzId!: number;
-
-    @OneToMany(() => Choice, (choice) => choice.question)
-    choices!: ChoiceEntity[];
 
     @CreateDateColumn()
     createdAt!: Date;

@@ -18,7 +18,7 @@ export async function getQuizzs(req: Request, res: Response) {
 export async function getQuizzById(req: Request, res: Response) {
     const quizz = await Quizz.findOne({
         where: { id: Number(req.params.id) },
-        relations: { author: true, questions: { choices: true } },
+        relations: { author: true, questions: true },
     });
 
     if (!quizz) {
@@ -31,10 +31,7 @@ export async function getQuizzById(req: Request, res: Response) {
 
     res.status(200).json({
         ...rest,
-        questions: questions.map((question) => ({
-            ...question,
-            choices: question.choices.map((choice) => (isOwner ? choice : omit(choice, 'isCorrect'))),
-        })),
+        questions: questions.map((question) => (isOwner ? question : omit(question, 'correctAnswer'))),
     });
 }
 
