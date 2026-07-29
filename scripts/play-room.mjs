@@ -1,12 +1,15 @@
 
-//   room:create  { quizzId }         -> { code }     (host only, must own the quizz)
+//   room:create   { quizzId }        -> { code }     (host only, must own the quizz)
 //   room:create-random { categoryIds, questionCount }
 //                                     -> { code }     (host only, PUBLISHED quizzes, any author)
-//   room:join    { code }            -> { ok }       (broadcasts room:players)
-//   room:start   { code }            -> { ok }       (host only, broadcasts question:show)
-//   answer:submit{ code, choiceIds } -> { ok }
-//   room:next    { code }            -> { ok }       (host only, broadcasts question:reveal, then
-//                                                      question:show or room:finished)
+//   room:join     { code }           -> { ok }       (broadcasts room:players)
+//   room:start    { code }           -> { ok }       (host only, broadcasts question:show)
+//   answer:submit { code, text }     -> { ok }
+//   room:next     { code }           -> { ok }       (host only; broadcasts the next question:show,
+//                                                      or sends the host the first review:answer once
+//                                                      every question has been played)
+//   review:decide { code, valid }    -> { ok }       (host only; sends the next review:answer, or
+//                                                      broadcasts room:finished once all answers are reviewed)
 
 import { createInterface } from 'node:readline/promises';
 import WebSocket from 'ws';
@@ -92,8 +95,8 @@ class RoomClient {
 }
 
 function printQuestion(question) {
-  console.log(`\nQuestion: ${question.text}`);
-  question.choices.forEach((choice, i) => console.log(`  [${i}] ${choice.text} (id=${choice.id})`));
+  console.log(`\n[${question.type}] ${question.text}`);
+  if (question.mediaId) console.log(`  media: ${BASE_URL}/media/${question.mediaId}`);
 }
 
 function printScoreboard(title, scoreboard) {
@@ -101,20 +104,14 @@ function printScoreboard(title, scoreboard) {
   scoreboard.forEach((p, i) => console.log(`  ${i + 1}. ${p.email} — ${p.score} pt(s)`));
 }
 
-// Shared setup for both roles: sign in, connect, and wire the two broadcasts that end a
-// session (question:reveal, room:finished) the same way for host and player alike.
+// Shared setup for both roles: sign in, connect, and wire the one broadcast that ends a
+// session (room:finished) the same way for host and player alike.
 async function connectAndRegisterCommonHandlers(email, password, extraListeners) {
   const token = await signIn(email, password);
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  let finished = false;
 
   const client = new RoomClient(token, {
-    'question:reveal': ({ correctChoiceIds, scoreboard }) => {
-      console.log(`\nCorrect choice id(s): ${correctChoiceIds.join(', ')}`);
-      printScoreboard('Scoreboard', scoreboard);
-    },
     'room:finished': ({ scoreboard }) => {
-      finished = true;
       printScoreboard('Final results', scoreboard);
       rl.close();
       client.close();
@@ -124,13 +121,25 @@ async function connectAndRegisterCommonHandlers(email, password, extraListeners)
   });
 
   await client.connected();
-  return { client, rl, isFinished: () => finished };
+  return { client, rl };
 }
 
 async function runHost({ email, password, quizz, categories, count }) {
-  const { client, rl, isFinished } = await connectAndRegisterCommonHandlers(email, password, {
+  const { client, rl } = await connectAndRegisterCommonHandlers(email, password, {
     'room:players': (players) => console.log(`\nPlayers in room: ${players.join(', ') || '(none yet)'}`),
-    'question:show': printQuestion,
+    'question:show': async (question) => {
+      printQuestion(question);
+      await rl.question('\nPress enter once everyone has answered...');
+      await client.request('room:next', { code });
+    },
+    'review:answer': async ({ email: player, questionText, correctAnswer, answerText, index, total }) => {
+      console.log(`\nReview ${index + 1}/${total} — ${player}`);
+      console.log(`  question: ${questionText}`);
+      console.log(`  expected: ${correctAnswer}`);
+      console.log(`  answered: ${answerText}`);
+      const valid = (await rl.question('Valid? (y/n): ')).trim().toLowerCase().startsWith('y');
+      await client.request('review:decide', { code, valid });
+    },
   });
 
   const { code } = categories
@@ -143,36 +152,17 @@ async function runHost({ email, password, quizz, categories, count }) {
 
   await rl.question('\nPress enter once everyone has joined to start the game...');
   await client.request('room:start', { code });
-
-  while (!isFinished()) {
-    try {
-      await rl.question('\nPress enter to reveal the answer and move to the next question...');
-    } catch {
-      break;
-    }
-    if (isFinished()) break;
-    await client.request('room:next', { code });
-  }
 }
 
 async function runPlayer({ email, password, code }) {
-  let currentQuestion = null;
-
   const { client, rl } = await connectAndRegisterCommonHandlers(email, password, {
     'room:players': (players) => console.log(`\nPlayers in room: ${players.join(', ')}`),
     'question:show': async (question) => {
-      currentQuestion = question;
       printQuestion(question);
-      const answer = await rl.question('Your answer (choice indexes separated by commas, e.g. "0,2"): ');
-      const choiceIds = answer
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map((i) => currentQuestion.choices[Number(i)]?.id)
-        .filter((id) => id !== undefined);
+      const text = await rl.question('Your answer: ');
 
       try {
-        await client.request('answer:submit', { code, choiceIds });
+        await client.request('answer:submit', { code, text });
       } catch (err) {
         console.error('Could not submit answer:', err.message);
       }

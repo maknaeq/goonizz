@@ -1,0 +1,40 @@
+info:
+  name: Create Question Invalid Media
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{BASE_URL}}quizzs/{{quizzId}}/questions"
+  body:
+    type: json
+    data: |-
+      {
+          "text": "Question avec un media invalide",
+          "categoryId": {{categoryId}},
+          "correctAnswer": "peu importe",
+          "mediaId": 999999999
+      }
+  auth: inherit
+
+docs: |-
+  Run "Sign In", "Create Category" and "Create Quizz" first. mediaId
+  points at nothing, should be rejected.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 400", function() {
+          expect(res.getStatus()).to.equal(400);
+        });
+
+        test("should report the media was not found", function() {
+          expect(res.getBody().errors).to.include('Media not found');
+        });

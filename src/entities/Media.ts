@@ -17,11 +17,14 @@ export class Media extends BaseEntity {
     @Column()
     mimetype!: string;
 
-    @Column()
-    width!: number;
+    @Column({ nullable: true })
+    width?: number;
 
-    @Column()
-    height!: number;
+    @Column({ nullable: true })
+    height?: number;
+
+    @Column({ type: 'float', nullable: true })
+    duration?: number;
 
     @Column()
     size!: number;

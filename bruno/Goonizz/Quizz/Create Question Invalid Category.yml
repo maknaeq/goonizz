@@ -12,10 +12,7 @@ http:
       {
           "text": "Question avec une categorie invalide",
           "categoryId": 999999999,
-          "choices": [
-              { "text": "A", "isCorrect": true },
-              { "text": "B", "isCorrect": false }
-          ]
+          "correctAnswer": "peu importe"
       }
   auth: inherit
 
