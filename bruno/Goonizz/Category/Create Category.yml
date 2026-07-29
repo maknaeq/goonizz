@@ -15,9 +15,7 @@ http:
   auth: inherit
 
 docs: |-
-  Run "Sign In" first so this request is authenticated. The created
-  category's id is stored in the `categoryId` variable and reused by
-  "Create Question" and "Get Quizzs By Category".
+  Run "Sign In" first. Stores the created category's id in `categoryId`.
 
 settings:
   encodeUrl: true

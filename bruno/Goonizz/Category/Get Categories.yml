@@ -9,8 +9,7 @@ http:
   auth: inherit
 
 docs: |-
-  Public route, no need to sign in first. Run "Create Category" first to
-  have at least one category to list.
+  Public route. Run "Create Category" first to have something to list.
 
 settings:
   encodeUrl: true

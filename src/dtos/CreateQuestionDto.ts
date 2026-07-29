@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMinSize, IsBoolean, IsNotEmpty, ValidateNested } from "class-validator";
+import { ArrayMinSize, IsBoolean, IsInt, IsNotEmpty, ValidateNested } from "class-validator";
 
 export class CreateChoiceDto {
     @IsNotEmpty()
@@ -12,6 +12,10 @@ export class CreateChoiceDto {
 export class CreateQuestionDto {
     @IsNotEmpty()
     text!: string;
+
+    @IsInt()
+    @IsNotEmpty()
+    categoryId!: number;
 
     @ValidateNested({ each: true })
     @Type(() => CreateChoiceDto)

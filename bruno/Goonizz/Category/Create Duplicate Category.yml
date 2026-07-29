@@ -15,8 +15,7 @@ http:
   auth: inherit
 
 docs: |-
-  Run "Create Category" first. Same name again, different casing
-  ("Histoire" vs "histoire"), should be rejected as duplicate.
+  Run "Create Category" first. Same name, different casing — must be rejected.
 
 settings:
   encodeUrl: true
