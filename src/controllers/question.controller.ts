@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
-import { Question } from '../entities/Question.js';
-import { Choice } from '../entities/Choice.js';
+import { Question, QuestionType } from '../entities/Question.js';
 import { Category } from '../entities/Category.js';
+import { Media } from '../entities/Media.js';
 import { CreateQuestionDto } from '../dtos/CreateQuestionDto.js';
 import { findOwnedQuizz } from '../utils/quizz.js';
 import { validateDto } from '../utils/validation.js';
 import '../types/express.js';
+
+const MEDIA_REQUIRED_TYPES: QuestionType[] = [QuestionType.BLIND_TEST, QuestionType.VIDEO_CLIP, QuestionType.IMAGE];
 
 export async function createQuestion(req: Request, res: Response) {
     const quizzId = Number(req.params.quizzId);
@@ -24,11 +26,6 @@ export async function createQuestion(req: Request, res: Response) {
         return;
     }
 
-    if (!dto.choices.some((choice) => choice.isCorrect)) {
-        res.status(400).json({ errors: ['at least one choice must be correct'] });
-        return;
-    }
-
     const category = await Category.findOne({ where: { id: dto.categoryId } });
 
     if (!category) {
@@ -36,18 +33,38 @@ export async function createQuestion(req: Request, res: Response) {
         return;
     }
 
-    const question = await Question.create({ text: dto.text, quizz, category }).save();
-    const savedChoices = await Choice.save(
-        dto.choices.map((choice) => Choice.create({ text: choice.text, isCorrect: choice.isCorrect, question }))
-    );
+    let media: Media | null = null;
+    if (dto.mediaId) {
+        media = await Media.findOne({ where: { id: dto.mediaId } });
+        if (!media) {
+            res.status(400).json({ errors: ['Media not found'] });
+            return;
+        }
+    }
+
+    if (!media && MEDIA_REQUIRED_TYPES.includes(dto.type)) {
+        res.status(400).json({ errors: [`type ${dto.type} requires a media`] });
+        return;
+    }
+
+    const question = await Question.create({
+        text: dto.text,
+        correctAnswer: dto.correctAnswer,
+        type: dto.type,
+        category,
+        media,
+        quizz,
+    }).save();
 
     res.status(201).json({
         id: question.id,
         text: question.text,
+        correctAnswer: question.correctAnswer,
+        type: question.type,
+        categoryId: question.categoryId,
+        mediaId: question.mediaId ?? null,
         order: question.order,
         quizzId: question.quizzId,
-        categoryId: question.categoryId,
-        choices: savedChoices.map(({ id, text, isCorrect }) => ({ id, text, isCorrect })),
     });
 }
 

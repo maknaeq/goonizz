@@ -1,24 +1,22 @@
-import { Type } from "class-transformer";
-import { ArrayMinSize, IsBoolean, IsInt, IsNotEmpty, ValidateNested } from "class-validator";
-
-export class CreateChoiceDto {
-    @IsNotEmpty()
-    text!: string;
-
-    @IsBoolean()
-    isCorrect!: boolean;
-}
+import { IsEnum, IsInt, IsNotEmpty, IsOptional } from "class-validator";
+import { QuestionType } from "../entities/Question.js";
 
 export class CreateQuestionDto {
     @IsNotEmpty()
     text!: string;
 
+    @IsNotEmpty()
+    correctAnswer!: string;
+
     @IsInt()
     @IsNotEmpty()
     categoryId!: number;
 
-    @ValidateNested({ each: true })
-    @Type(() => CreateChoiceDto)
-    @ArrayMinSize(2)
-    choices!: CreateChoiceDto[];
+    @IsOptional()
+    @IsEnum(QuestionType)
+    type: QuestionType = QuestionType.CLASSIC;
+
+    @IsOptional()
+    @IsInt()
+    mediaId?: number;
 }

@@ -6,15 +6,21 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
-    RelationId,
-    OneToMany
+    RelationId
 } from 'typeorm';
 import { Quizz } from './Quizz.js';
 import type { Quizz as QuizzEntity } from './Quizz.js';
 import { Category } from './Category.js';
 import type { Category as CategoryEntity } from './Category.js';
-import { Choice } from './Choice.js';
-import type { Choice as ChoiceEntity } from './Choice.js';
+import { Media } from './Media.js';
+
+export enum QuestionType {
+    CLASSIC = 'classic',
+    BLIND_TEST = 'blind_test',
+    QUOTE = 'quote',
+    VIDEO_CLIP = 'video_clip',
+    IMAGE = 'image',
+}
 
 @Entity()
 export class Question extends BaseEntity {
@@ -23,6 +29,12 @@ export class Question extends BaseEntity {
 
     @Column()
     text!: string;
+
+    @Column()
+    correctAnswer!: string;
+
+    @Column({ type: 'simple-enum', enum: QuestionType, default: QuestionType.CLASSIC })
+    type: QuestionType = QuestionType.CLASSIC;
 
     @Column({ default: 0 })
     order: number = 0;
@@ -39,8 +51,11 @@ export class Question extends BaseEntity {
     @RelationId((question: Question) => question.category)
     categoryId!: number;
 
-    @OneToMany(() => Choice, (choice) => choice.question)
-    choices!: ChoiceEntity[];
+    @ManyToOne(() => Media, { nullable: true, onDelete: 'SET NULL' })
+    media?: Media | null;
+
+    @RelationId((question: Question) => question.media)
+    mediaId?: number | null;
 
     @CreateDateColumn()
     createdAt!: Date;

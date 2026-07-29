@@ -32,7 +32,7 @@ export async function getQuizzs(req: Request, res: Response) {
 export async function getQuizzById(req: Request, res: Response) {
     const quizz = await Quizz.findOne({
         where: { id: Number(req.params.id) },
-        relations: { author: true, questions: true },
+        relations: { author: true, questions: { media: true } },
     });
 
     if (!quizz) {
