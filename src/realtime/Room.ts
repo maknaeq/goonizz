@@ -31,7 +31,7 @@ export type RevealResult = {
 
 export class Room {
     readonly code: string;
-    readonly quizzId: number;
+    readonly quizzId: number | null;
     readonly hostUserId: number;
 
     private readonly questions: RoomQuestion[];
@@ -43,7 +43,7 @@ export class Room {
 
     constructor(
         code: string,
-        quizzId: number,
+        quizzId: number | null,
         hostUserId: number,
         hostEmail: string,
         questions: RoomQuestion[],

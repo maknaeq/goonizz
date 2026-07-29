@@ -1,0 +1,33 @@
+info:
+  name: Get Categories
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{BASE_URL}}categories"
+  auth: inherit
+
+docs: |-
+  Public route. Run "Create Category" first to have something to list.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 200", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return an array containing the created category", function() {
+          const body = res.getBody();
+          expect(body).to.be.an('array');
+          const ids = body.map((category) => category.id);
+          expect(ids).to.include(bru.getVar('categoryId'));
+        });

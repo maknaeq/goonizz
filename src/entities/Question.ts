@@ -11,6 +11,8 @@ import {
 } from 'typeorm';
 import { Quizz } from './Quizz.js';
 import type { Quizz as QuizzEntity } from './Quizz.js';
+import { Category } from './Category.js';
+import type { Category as CategoryEntity } from './Category.js';
 import { Choice } from './Choice.js';
 import type { Choice as ChoiceEntity } from './Choice.js';
 
@@ -30,6 +32,12 @@ export class Question extends BaseEntity {
 
     @RelationId((question: Question) => question.quizz)
     quizzId!: number;
+
+    @ManyToOne(() => Category)
+    category!: CategoryEntity;
+
+    @RelationId((question: Question) => question.category)
+    categoryId!: number;
 
     @OneToMany(() => Choice, (choice) => choice.question)
     choices!: ChoiceEntity[];

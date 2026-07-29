@@ -11,7 +11,21 @@ function withoutAuthorPassword(quizz: Quizz) {
 }
 
 export async function getQuizzs(req: Request, res: Response) {
-    const quizzs = await Quizz.find({ relations: { author: true } });
+    const categoryId = req.query.categoryId ? Number(req.query.categoryId) : undefined;
+
+    if (categoryId === undefined) {
+        const quizzs = await Quizz.find({ relations: { author: true } });
+        res.status(200).json(quizzs.map(withoutAuthorPassword));
+        return;
+    }
+
+    const quizzs = await Quizz.createQueryBuilder('quizz')
+        .leftJoinAndSelect('quizz.author', 'author')
+        .innerJoin('quizz.questions', 'question')
+        .where('question.categoryId = :categoryId', { categoryId })
+        .distinct(true)
+        .getMany();
+
     res.status(200).json(quizzs.map(withoutAuthorPassword));
 }
 
