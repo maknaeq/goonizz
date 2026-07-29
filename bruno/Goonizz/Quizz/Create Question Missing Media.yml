@@ -1,0 +1,40 @@
+info:
+  name: Create Question Missing Media
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{BASE_URL}}quizzs/{{quizzId}}/questions"
+  body:
+    type: json
+    data: |-
+      {
+          "text": "Quel est cet extrait ?",
+          "categoryId": {{categoryId}},
+          "correctAnswer": "Extrait X",
+          "type": "video_clip"
+      }
+  auth: inherit
+
+docs: |-
+  Run "Sign In", "Create Category" and "Create Quizz" first. video_clip
+  needs a mediaId, this omits it on purpose.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 400", function() {
+          expect(res.getStatus()).to.equal(400);
+        });
+
+        test("should report the type requires a media", function() {
+          expect(res.getBody().errors).to.include('type video_clip requires a media');
+        });

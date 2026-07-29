@@ -1,7 +1,7 @@
 info:
   name: Get Quizzs By Category Excludes Unrelated
   type: http
-  seq: 7
+  seq: 11
 
 http:
   method: GET

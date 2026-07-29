@@ -20,25 +20,14 @@ websocket:
       }
 
 docs: |-
-  IMPORTANT: unlike HTTP requests, Bruno's WS client does NOT use the shared
-  cookie jar (`auth: inherit` does nothing here) — the auth cookie is sent as
-  an explicit `Cookie` header instead, using the `{{token}}` variable, filled
-  in by "Sign In"'s post-response script.
-
-  Sign in as a *different* user first (running "Sign In" overwrites the
-  `token` variable, so use a second Bruno tab/window signed in as another
-  account, or re-run "Sign In" with another email right before this if you're
-  testing solo — just note it'll also change the token "Play as Host" uses).
+  Sign in as a different user first (running "Sign In" again overwrites
+  `token`, so use a second tab/window, or re-sign-in right before this).
   Replace "PASTE_ROOM_CODE_HERE" with the code from "Play as Host".
 
-  Same one-connection-many-messages model as "Play as Host" — connect, send
-  `room:join`, then once you receive a `question:show` push, answer with:
-  { "type": "answer:submit", "requestId": "2", "payload": { "code": "ABC123", "choiceIds": [1] } }
-
-  `choiceIds` is the list of choice ids you're picking (see the `id` fields in
-  the `question:show` payload) — more than one id means a multi-answer guess.
-  You'll then receive `question:reveal` (correct answer + scoreboard) and either
-  another `question:show` or `room:finished` (final scoreboard).
+  Connect, send `room:join`, then on each `question:show` answer with
+  free text: `answer:submit { code, text }`. One answer per question,
+  no immediate feedback — the host reviews everything at the end, you
+  just get the next question or `room:finished`.
 
 settings:
   timeout: 0

@@ -1,7 +1,7 @@
 info:
   name: Get Quizzs By Category
   type: http
-  seq: 6
+  seq: 10
 
 http:
   method: GET

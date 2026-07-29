@@ -9,10 +9,8 @@ http:
   auth: inherit
 
 docs: |-
-  Run "Create Quizz" first so `quizzId` is set. Returns the quizz with
-  its questions and choices. The `isCorrect` field on choices is only
-  included when the signed-in user is the quizz's author, otherwise it
-  is stripped so players can't see the answers ahead of time.
+  Run "Create Quizz" first. correctAnswer is stripped unless you're the
+  quizz's author.
 
 settings:
   encodeUrl: true

@@ -1,0 +1,42 @@
+info:
+  name: Create Question With Media
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{BASE_URL}}quizzs/{{quizzId}}/questions"
+  body:
+    type: json
+    data: |-
+      {
+          "text": "Quel est ce logo ?",
+          "categoryId": {{categoryId}},
+          "correctAnswer": "Test Pattern",
+          "type": "image",
+          "mediaId": {{mediaId}}
+      }
+  auth: inherit
+
+docs: |-
+  Run "Sign In", "Create Category", "Create Quizz" and "Upload Media" first.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 201", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the created question with its media", function() {
+          const body = res.getBody();
+          expect(body.type).to.equal('image');
+          expect(body.mediaId).to.equal(bru.getVar('mediaId'));
+        });
