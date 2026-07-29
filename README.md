@@ -65,7 +65,11 @@ Ruleset actif sur GitHub : PR obligatoire (pas de push direct), et le check `bru
 
 ### Watchtower — CD (polling)
 - **Déclencheur** : toutes les 5 minutes (`compose.watchtower.yml`), Watchtower interroge `ghcr.io` pour les containers portant le label `com.centurylinklabs.watchtower.enable=true` (seul `api` l'a — pas `db`)
-- **Effet** : si une nouvelle image `:dev` existe (poussée par `docker-build.yml`), Watchtower la télécharge et redémarre le container automatiquement, sans action humaine → c'est du *Continuous Deployment* sur l'environnement de staging, en approche *polling* (pas de webhook possible ici, l'infra tourne en local/sans exposition publique).
+- **Effet** : si une nouvelle image `:dev` existe (poussée par `docker-build.yml`), Watchtower la télécharge et redémarre le container automatiquement, sans action humaine → c'est du *Continuous Delivery* automatique vers l'environnement de recette, en approche *polling* (pas de webhook possible ici, l'infra tourne en local/sans exposition publique). Le passage recette → prod (`dev` → `main`) reste lui manuel, via la PR à merger : c'est le point de bascule humain entre delivery et un éventuel deployment complet.
+- **Notifications** : optionnelles, via `WATCHTOWER_NOTIFICATION_URL` (format [shoutrrr](https://nicholas-fedor.github.io/shoutrrr/services/overview/), ex. Discord). Créer un fichier `.env` à la racine (ignoré par git, voir `.env.example`) avec `WATCHTOWER_NOTIFICATION_URL=discord://TOKEN@WEBHOOKID` — sans ce fichier, Watchtower tourne normalement sans rien notifier (`Using no notifications`).
+
+### `concurrency` sur les workflows
+`tests.yml` et `docker-build.yml` annulent automatiquement un run en cours si un nouveau push arrive sur la même branche/PR (`concurrency.cancel-in-progress`) — évite de consommer des minutes CI pour un résultat qui sera de toute façon remplacé.
 
 Chaîne complète pour une évolution sur `dev` : `push` → `tests.yml` teste → `docker-build.yml` build+push l'image `:dev` (si sur `dev`/`main`) → Watchtower la détecte sous 5 min et relance `api` avec la nouvelle version, en local via `compose.prod.yml` + `compose.watchtower.yml`.
 

@@ -6,6 +6,10 @@ on:
       - main
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   bruno-tests:
     runs-on: ubuntu-latest
