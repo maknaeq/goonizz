@@ -15,7 +15,7 @@ type AuthenticatedRequest = IncomingMessage & { user?: User };
 type ClientMessage = { type: string; requestId?: string; payload?: unknown };
 
 function publicQuestion(question: RoomQuestion) {
-    return { id: question.id, text: question.text, choices: question.choices.map(({ id, text }) => ({ id, text })) };
+    return { id: question.id, text: question.text, type: question.type, mediaId: question.mediaId };
 }
 
 export class QuizSocketServer {
@@ -86,10 +86,13 @@ export class QuizSocketServer {
                     this.handleRoomStart(socket, session, requestId, payload as { code: string });
                     break;
                 case 'answer:submit':
-                    this.handleAnswerSubmit(socket, session, requestId, payload as { code: string; choiceIds: number[] });
+                    this.handleAnswerSubmit(socket, session, requestId, payload as { code: string; text: string });
                     break;
                 case 'room:next':
                     this.handleRoomNext(socket, session, requestId, payload as { code: string });
+                    break;
+                case 'review:decide':
+                    this.handleReviewDecide(socket, session, requestId, payload as { code: string; valid: boolean });
                     break;
                 default:
                     throw new Error('Unknown message type');
@@ -105,7 +108,7 @@ export class QuizSocketServer {
         requestId: string | undefined,
         payload: { quizzId: number }
     ): Promise<void> {
-        const quizz = await findOwnedQuizz(payload.quizzId, session.userId, { questions: { choices: true } });
+        const quizz = await findOwnedQuizz(payload.quizzId, session.userId, { questions: { media: true } });
 
         if (!quizz) {
             throw new Error('Quizz not found');
@@ -124,11 +127,9 @@ export class QuizSocketServer {
             quizz.questions.map((question) => ({
                 id: question.id,
                 text: question.text,
-                choices: question.choices.map((choice) => ({
-                    id: choice.id,
-                    text: choice.text,
-                    isCorrect: choice.isCorrect,
-                })),
+                type: question.type,
+                correctAnswer: question.correctAnswer,
+                mediaId: question.mediaId ?? null,
             })),
             socket
         );
@@ -156,7 +157,6 @@ export class QuizSocketServer {
 
         const pool = await Question.createQueryBuilder('question')
             .innerJoin('question.quizz', 'quizz')
-            .leftJoinAndSelect('question.choices', 'choice')
             .where('quizz.status = :status', { status: QuizzStatus.PUBLISHED })
             .andWhere('question.categoryId IN (:...categoryIds)', { categoryIds })
             .getMany();
@@ -176,11 +176,9 @@ export class QuizSocketServer {
             picked.map((question) => ({
                 id: question.id,
                 text: question.text,
-                choices: question.choices.map((choice) => ({
-                    id: choice.id,
-                    text: choice.text,
-                    isCorrect: choice.isCorrect,
-                })),
+                type: question.type,
+                correctAnswer: question.correctAnswer,
+                mediaId: question.mediaId ?? null,
             })),
             socket
         );
@@ -226,11 +224,11 @@ export class QuizSocketServer {
         socket: WebSocket,
         session: Session,
         requestId: string | undefined,
-        payload: { code: string; choiceIds: number[] }
+        payload: { code: string; text: string }
     ): void {
         const room = this.rooms.get(payload.code);
 
-        if (!room || !room.isAcceptingAnswers() || !room.submitAnswer(session.userId, payload.choiceIds)) {
+        if (!room || !room.isAcceptingAnswers() || !room.submitAnswer(session.userId, payload.text)) {
             throw new Error('Not accepting answers');
         }
 
@@ -239,18 +237,40 @@ export class QuizSocketServer {
 
     private handleRoomNext(socket: WebSocket, session: Session, requestId: string | undefined, payload: { code: string }): void {
         const room = this.requireHostRoom(session, payload.code);
+        this.dispatchAdvance(room, room.advance());
+        this.sendResponse(socket, requestId, true, { ok: true });
+    }
 
-        const { correctChoiceIds, scoreboard, nextQuestion } = room.revealAndAdvance();
-        room.broadcast('question:reveal', { correctChoiceIds, scoreboard });
+    private handleReviewDecide(
+        socket: WebSocket,
+        session: Session,
+        requestId: string | undefined,
+        payload: { code: string; valid: boolean }
+    ): void {
+        const room = this.requireHostRoom(session, payload.code);
+        this.dispatchAdvance(room, room.decideReview(payload.valid));
+        this.sendResponse(socket, requestId, true, { ok: true });
+    }
 
-        if (nextQuestion) {
-            room.broadcast('question:show', publicQuestion(nextQuestion));
+    // A question can lead straight into the review phase once it's the last one, and a
+    // review decision can either surface the next answer or end the game — both `Room`
+    // transitions funnel through the same three outcomes, so handle them in one place.
+    private dispatchAdvance(room: Room, result: ReturnType<Room['advance']>): void {
+        if (result.kind === 'question') {
+            room.broadcast('question:show', publicQuestion(result.question));
+        } else if (result.kind === 'review') {
+            room.sendToHost('review:answer', {
+                email: result.answer.email,
+                questionText: result.answer.questionText,
+                correctAnswer: result.answer.correctAnswer,
+                answerText: result.answer.answerText,
+                index: result.index,
+                total: result.total,
+            });
         } else {
-            room.broadcast('room:finished', { scoreboard });
+            room.broadcast('room:finished', { scoreboard: result.scoreboard });
             this.rooms.delete(room.code);
         }
-
-        this.sendResponse(socket, requestId, true, { ok: true });
     }
 
     private handleClose(socket: WebSocket): void {
