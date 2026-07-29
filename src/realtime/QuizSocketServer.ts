@@ -118,25 +118,7 @@ export class QuizSocketServer {
             throw new Error('Quizz has no questions');
         }
 
-        const code = this.generateRoomCode();
-        const room = new Room(
-            code,
-            quizz.id,
-            session.userId,
-            session.email,
-            quizz.questions.map((question) => ({
-                id: question.id,
-                text: question.text,
-                type: question.type,
-                correctAnswer: question.correctAnswer,
-                mediaId: question.mediaId ?? null,
-            })),
-            socket
-        );
-
-        this.rooms.set(code, room);
-        session.roomCode = code;
-        this.sendResponse(socket, requestId, true, { code });
+        this.createRoom(socket, session, requestId, quizz.id, quizz.questions);
     }
 
     private async handleRoomCreateRandom(
@@ -167,13 +149,23 @@ export class QuizSocketServer {
 
         const picked = this.pickRandom(pool, questionCount);
 
+        this.createRoom(socket, session, requestId, null, picked);
+    }
+
+    private createRoom(
+        socket: WebSocket,
+        session: Session,
+        requestId: string | undefined,
+        quizzId: number | null,
+        questions: Question[]
+    ): void {
         const code = this.generateRoomCode();
         const room = new Room(
             code,
-            null,
+            quizzId,
             session.userId,
             session.email,
-            picked.map((question) => ({
+            questions.map((question) => ({
                 id: question.id,
                 text: question.text,
                 type: question.type,
