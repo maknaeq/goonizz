@@ -1,0 +1,42 @@
+info:
+  name: Upload Media
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}media"
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value:
+          - fixtures/avatar-test.png
+        contentType: image/png
+  auth: inherit
+
+docs: |-
+  Run "Sign In" first. Accepts image/audio/video, compressed server-side
+  on upload. Stores the media id in `mediaId`.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 201", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the created media", function() {
+          const body = res.getBody();
+          expect(body).to.have.property('id');
+          expect(body.mimetype).to.equal('image/webp');
+          bru.setVar("mediaId", body.id);
+        });

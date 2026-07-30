@@ -1,0 +1,39 @@
+info:
+  name: Create Second Category
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{BASE_URL}}categories"
+  body:
+    type: json
+    data: |-
+      {
+          "name": "Anime"
+      }
+  auth: inherit
+
+docs: |-
+  Run "Sign In" first. Gives "Get Quizzs By Category" a second category with no matching quizz.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 201", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the created category", function() {
+          const body = res.getBody();
+          expect(body).to.have.property('id');
+          expect(body.name).to.equal('Anime');
+          bru.setVar("otherCategoryId", body.id);
+        });

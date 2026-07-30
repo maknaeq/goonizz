@@ -11,14 +11,14 @@ http:
     data: |-
       {
           "title": "Culture generale",
-          "description": "Un petit quizz de culture generale"
+          "description": "Un petit quizz de culture generale",
+          "status": "published"
       }
   auth: inherit
 
 docs: |-
-  Run "Sign In" first so this request is authenticated. The created
-  quizz's id is stored in the `quizzId` variable and reused by the
-  other requests in this folder.
+  Run "Sign In" first. Stores the quizz id in `quizzId`. Published so
+  the random-room test can pick it up.
 
 settings:
   encodeUrl: true

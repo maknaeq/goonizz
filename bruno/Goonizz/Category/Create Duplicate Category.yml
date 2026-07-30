@@ -1,0 +1,36 @@
+info:
+  name: Create Duplicate Category
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{BASE_URL}}categories"
+  body:
+    type: json
+    data: |-
+      {
+          "name": "histoire"
+      }
+  auth: inherit
+
+docs: |-
+  Run "Create Category" first. Same name, different casing — must be rejected.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 400", function() {
+          expect(res.getStatus()).to.equal(400);
+        });
+
+        test("should report the category already exists", function() {
+          expect(res.getBody().errors).to.include('Category already exists');
+        });

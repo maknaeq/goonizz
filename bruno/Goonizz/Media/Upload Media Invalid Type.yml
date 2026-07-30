@@ -1,0 +1,38 @@
+info:
+  name: Upload Media Invalid Type
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{BASE_URL}}media"
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value:
+          - fixtures/avatar-test.png
+        contentType: text/plain
+  auth: inherit
+
+docs: |-
+  Same file as "Upload Media" but sent as text/plain, should get rejected.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 400", function() {
+          expect(res.getStatus()).to.equal(400);
+        });
+
+        test("should report the file type is not allowed", function() {
+          expect(res.getBody().errors).to.include('Only image, audio or video files are allowed');
+        });

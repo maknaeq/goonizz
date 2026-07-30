@@ -10,20 +10,15 @@ http:
     type: json
     data: |-
       {
-          "text": "Quels langages sont compiles ?",
-          "choices": [
-              { "text": "TypeScript", "isCorrect": true },
-              { "text": "Python", "isCorrect": false },
-              { "text": "Go", "isCorrect": true }
-          ]
+          "text": "Qui a ecrit 'Les Miserables' ?",
+          "categoryId": {{categoryId}},
+          "correctAnswer": "Victor Hugo"
       }
   auth: inherit
 
 docs: |-
-  Run "Sign In" then "Create Quizz" first (`quizzId` must be set, and
-  you must be the quizz's author). At least 2 choices and at least one
-  correct choice are required. The created question's id is stored in
-  the `questionId` variable for "Delete Question".
+  Run "Sign In", "Create Category" and "Create Quizz" first. Stores the
+  question id in `questionId`. Free-text answer, no more choices.
 
 settings:
   encodeUrl: true
@@ -39,9 +34,11 @@ runtime:
           expect(res.getStatus()).to.equal(201);
         });
 
-        test("should return the created question with its choices", function() {
+        test("should return the created question", function() {
           const body = res.getBody();
           expect(body).to.have.property('id');
-          expect(body.choices).to.be.an('array').with.length(3);
+          expect(body.correctAnswer).to.equal('Victor Hugo');
+          expect(body.type).to.equal('classic');
+          expect(body.categoryId).to.equal(bru.getVar('categoryId'));
           bru.setVar("questionId", body.id);
         });

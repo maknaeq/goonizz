@@ -1,0 +1,38 @@
+info:
+  name: Create Question Invalid Category
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{BASE_URL}}quizzs/{{quizzId}}/questions"
+  body:
+    type: json
+    data: |-
+      {
+          "text": "Question avec une categorie invalide",
+          "categoryId": 999999999,
+          "correctAnswer": "peu importe"
+      }
+  auth: inherit
+
+docs: |-
+  Run "Create Quizz" first. A nonexistent `categoryId` must be rejected, not create an orphaned question.
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 404", function() {
+          expect(res.getStatus()).to.equal(404);
+        });
+
+        test("should report the category was not found", function() {
+          expect(res.getBody().errors).to.include('Category not found');
+        });

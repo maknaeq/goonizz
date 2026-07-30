@@ -1,0 +1,33 @@
+info:
+  name: Play as Host (Random Room)
+  type: websocket
+  seq: 3
+  tags: [ws]
+
+websocket:
+  url: "{{WS_BASE_URL}}"
+  headers:
+    - name: Cookie
+      value: "token={{token}}"
+  auth: none
+  message:
+    type: json
+    data: |-
+      {
+        "type": "room:create-random",
+        "requestId": "1",
+        "payload": { "categoryIds": [{{categoryId}}], "questionCount": 1 }
+      }
+
+docs: |-
+  Same as "Play as Host" but picks `questionCount` random questions from
+  any published quizz in the given categories, instead of one you own.
+
+  Run "Sign In", "Create Category" and "Create Quizz" first (needs at
+  least one published quizz with a question in that category, otherwise
+  you'll get "Not enough questions in selected categories"). Then it's
+  the same flow as "Play as Host" from step 2 onward.
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0

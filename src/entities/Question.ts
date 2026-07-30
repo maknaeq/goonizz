@@ -1,42 +1,65 @@
 import {
-    BaseEntity,
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
-    ManyToOne,
-    RelationId,
-    OneToMany
-} from 'typeorm';
-import { Quizz } from './Quizz.js';
-import type { Quizz as QuizzEntity } from './Quizz.js';
-import { Choice } from './Choice.js';
-import type { Choice as ChoiceEntity } from './Choice.js';
+  BaseEntity,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  RelationId,
+} from "typeorm";
+import { Quizz } from "./Quizz.js";
+import type { Quizz as QuizzEntity } from "./Quizz.js";
+import { Category } from "./Category.js";
+import type { Category as CategoryEntity } from "./Category.js";
+import { Media } from "./Media.js";
+
+export enum QuestionType {
+  CLASSIC = "classic",
+  BLIND_TEST = "blind_test",
+  QUOTE = "quote",
+  VIDEO_CLIP = "video_clip",
+  IMAGE = "image",
+}
 
 @Entity()
 export class Question extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Column()
-    text!: string;
+  @Column()
+  text!: string;
 
-    @Column({ default: 0 })
-    order: number = 0;
+  @Column()
+  correctAnswer!: string;
 
-    @ManyToOne(() => Quizz, { onDelete: 'CASCADE' })
-    quizz!: QuizzEntity;
+  @Column({ type: "simple-enum", enum: QuestionType, default: QuestionType.CLASSIC })
+  type: QuestionType = QuestionType.CLASSIC;
 
-    @RelationId((question: Question) => question.quizz)
-    quizzId!: number;
+  @Column({ default: 0 })
+  order: number = 0;
 
-    @OneToMany(() => Choice, (choice) => choice.question)
-    choices!: ChoiceEntity[];
+  @ManyToOne(() => Quizz, { onDelete: "CASCADE" })
+  quizz!: QuizzEntity;
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @RelationId((question: Question) => question.quizz)
+  quizzId!: number;
 
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @ManyToOne(() => Category)
+  category!: CategoryEntity;
+
+  @RelationId((question: Question) => question.category)
+  categoryId!: number;
+
+  @ManyToOne(() => Media, { nullable: true, onDelete: "SET NULL" })
+  media?: Media | null;
+
+  @RelationId((question: Question) => question.media)
+  mediaId?: number | null;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

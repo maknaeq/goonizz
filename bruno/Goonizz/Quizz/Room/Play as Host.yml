@@ -20,35 +20,20 @@ websocket:
       }
 
 docs: |-
-  Bruno's WebSocket client only runs in the desktop app (not via the `bru` CLI),
-  and one Bruno ws-request = one persistent connection where you send messages
-  manually, one at a time, from the app's message box — it's not a
-  request/response pair like the HTTP items above.
+  Bruno's WS client only works in the desktop app, one connection where
+  you send messages manually. It ignores the shared cookie jar too, the
+  token is sent as a `Cookie` header via `{{token}}` (set by "Sign In").
 
-  IMPORTANT: unlike HTTP requests, Bruno's WS client does NOT use the shared
-  cookie jar (`auth: inherit` does nothing here) — the auth cookie is sent as
-  an explicit `Cookie` header instead, using the `{{token}}` variable. "Sign In"
-  now stores that token in a variable automatically, so just run "Sign In"
-  before connecting and it'll be picked up. If you get a 401 on connect, re-run
-  "Sign In" first.
+  Run "Sign In" + "Create Quizz" first, then in the app:
 
-  Run "Sign In" then "Create Quizz" first (`quizzId` must be set — you must be
-  the quizz's author and it needs at least one question). Then, in the
-  desktop app:
-
-  1. Click "Connect" — the pre-filled message above is `room:create`, sent it.
-     The server responds with
-     { "type": "response", "requestId": "1", "ok": true, "payload": { "code": "ABC123" } }
-     Share that code with whoever runs "Play as Player" below.
-
-  2. Once they've joined (you'll receive a `room:players` push), send:
-     { "type": "room:start", "requestId": "2", "payload": { "code": "ABC123" } }
-
-  3. After a player answers, send this to reveal the answer and move on
-     (repeat for every question, then the server sends `room:finished`):
-     { "type": "room:next", "requestId": "3", "payload": { "code": "ABC123" } }
-
-  Replace "ABC123" with the actual code returned by room:create.
+  1. Connect, send the pre-filled `room:create` message, get the code back.
+  2. Once the player's joined: `room:start` → you get `question:show` pushes.
+  3. After each question: `room:next` → next question, or once the last
+     one's done, a `review:answer` push (only to you) with one player's
+     raw answer to check against `correctAnswer`.
+  4. For each one, reply with `review:decide { code, valid }`. Repeat until
+     `room:finished` with the scoreboard — points only count for answers
+     you marked valid, there's no auto-scoring anymore.
 
 settings:
   timeout: 0

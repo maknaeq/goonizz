@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres
+    image: postgres:16
     restart: always
     environment:
       POSTGRES_PASSWORD: secret
@@ -15,8 +15,10 @@ services:
       retries: 5
 
   api:
-    image: ghcr.io/maknaeq/goonizz:latest
+    image: ghcr.io/maknaeq/goonizz:dev
     restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - 3000:3000
     environment:
@@ -24,7 +26,8 @@ services:
     networks:
       - app-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 networks:
   app-network:
