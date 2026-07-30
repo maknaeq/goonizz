@@ -17,16 +17,19 @@ docker compose up --build
 ```
 
 Ça lance deux services sur un réseau Docker dédié (`app-network`) :
+
 - `db` : PostgreSQL, port `5432` publié sur l'hôte
 - `api` : l'app, port `3000` publié sur l'hôte, build stage `dev` (voir plus bas), avec le dossier du projet monté en volume → **live-reload** actif (`nodemon` + `ts-node`), toute modification de `src/` redémarre le serveur automatiquement
 
 L'API n'attend pas juste que le container Postgres soit lancé : `depends_on` utilise `condition: service_healthy`, donc `api` ne démarre qu'une fois le `healthcheck` (`pg_isready`) de `db` au vert — évite une erreur de connexion au boot.
 
 Tester l'API : les requêtes sont dans `bruno/Goonizz` (collection [Bruno](https://www.usebruno.com/)), environnement `Local`. En CLI :
+
 ```bash
 cd bruno/Goonizz
 npx @usebruno/cli run --env Local -r --exclude-tags ws
 ```
+
 (`--exclude-tags ws` exclut les 2 requêtes WebSocket, que le CLI headless ne supporte pas — à tester manuellement dans l'app Bruno desktop, ou via `node scripts/e2e.mjs` avec la stack lancée).
 
 ## Reproduire la production en local
@@ -39,21 +42,23 @@ Contrairement à `compose.yml`, ce fichier n'a **aucune clause `build`** : `api`
 
 ## Environnements
 
-| Environnement | Où | Image utilisée | Rôle |
-|---|---|---|---|
-| Local | poste de dev | buildée en local (`compose.yml`, stage `dev`) | développement avec live-reload |
-| Staging (`dev`) | serveur de recette (ou local via `compose.prod.yml`) | `ghcr.io/maknaeq/goonizz:dev` | valider une évolution avant `main`, mise à jour automatique par Watchtower |
-| Production (`main`) | — | `ghcr.io/maknaeq/goonizz:latest` | version stable |
+| Environnement       | Où                                                   | Image utilisée                                | Rôle                                                                       |
+| ------------------- | ---------------------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------- |
+| Local               | poste de dev                                         | buildée en local (`compose.yml`, stage `dev`) | développement avec live-reload                                             |
+| Staging (`dev`)     | serveur de recette (ou local via `compose.prod.yml`) | `ghcr.io/maknaeq/goonizz:dev`                 | valider une évolution avant `main`, mise à jour automatique par Watchtower |
+| Production (`main`) | —                                                    | `ghcr.io/maknaeq/goonizz:latest`              | version stable                                                             |
 
 Chaque image porte aussi un tag `sha-<commit>` (toujours généré), pour retrouver/rollback vers une version précise.
 
 ## CI/CD : déclencheurs et effets de bord
 
 ### `.github/workflows/tests.yml` — Tests
+
 - **Déclencheur** : `push` sur n'importe quelle branche, et `pull_request` vers `main`
 - **Effet** : lance la stack `compose.yml` (API + Postgres) sur le runner, exécute la collection Bruno contre `http://localhost:3000`. Échec → le check `bruno-tests` passe au rouge.
 
 ### `.github/workflows/docker-build.yml` — Build and push Docker image
+
 - **Déclencheur** : `push` sur `main` ou `dev` uniquement
 - **Effet** : build le stage `runtime` du `Dockerfile`, le pousse sur `ghcr.io/maknaeq/goonizz` avec les tags :
   - `latest` — uniquement si la branche est la branche par défaut (`main`)
@@ -61,14 +66,17 @@ Chaque image porte aussi un tag `sha-<commit>` (toujours généré), pour retrou
   - `sha-<commit>` — toujours
 
 ### Protection de branche `main`
+
 Ruleset actif sur GitHub : PR obligatoire (pas de push direct), et le check `bruno-tests` doit être vert avant de pouvoir merger.
 
 ### Watchtower — CD (polling)
+
 - **Déclencheur** : toutes les 5 minutes (`compose.watchtower.yml`), Watchtower interroge `ghcr.io` pour les containers portant le label `com.centurylinklabs.watchtower.enable=true` (seul `api` l'a — pas `db`)
-- **Effet** : si une nouvelle image `:dev` existe (poussée par `docker-build.yml`), Watchtower la télécharge et redémarre le container automatiquement, sans action humaine → c'est du *Continuous Delivery* automatique vers l'environnement de recette, en approche *polling* (pas de webhook possible ici, l'infra tourne en local/sans exposition publique). Le passage recette → prod (`dev` → `main`) reste lui manuel, via la PR à merger : c'est le point de bascule humain entre delivery et un éventuel deployment complet.
+- **Effet** : si une nouvelle image `:dev` existe (poussée par `docker-build.yml`), Watchtower la télécharge et redémarre le container automatiquement, sans action humaine → c'est du _Continuous Delivery_ automatique vers l'environnement de recette, en approche _polling_ (pas de webhook possible ici, l'infra tourne en local/sans exposition publique). Le passage recette → prod (`dev` → `main`) reste lui manuel, via la PR à merger : c'est le point de bascule humain entre delivery et un éventuel deployment complet.
 - **Notifications** : optionnelles, via `WATCHTOWER_NOTIFICATION_URL` (format [shoutrrr](https://nicholas-fedor.github.io/shoutrrr/services/overview/), ex. Discord). Créer un fichier `.env` à la racine (ignoré par git, voir `.env.example`) avec `WATCHTOWER_NOTIFICATION_URL=discord://TOKEN@WEBHOOKID` — sans ce fichier, Watchtower tourne normalement sans rien notifier (`Using no notifications`).
 
 ### `concurrency` sur les workflows
+
 `tests.yml` et `docker-build.yml` annulent automatiquement un run en cours si un nouveau push arrive sur la même branche/PR (`concurrency.cancel-in-progress`) — évite de consommer des minutes CI pour un résultat qui sera de toute façon remplacé.
 
 Chaîne complète pour une évolution sur `dev` : `push` → `tests.yml` teste → `docker-build.yml` build+push l'image `:dev` (si sur `dev`/`main`) → Watchtower la détecte sous 5 min et relance `api` avec la nouvelle version, en local via `compose.prod.yml` + `compose.watchtower.yml`.

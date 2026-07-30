@@ -34,7 +34,6 @@ services:
       db:
         condition: service_healthy
 
-
 networks:
   app-network:
 
