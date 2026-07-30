@@ -2,21 +2,21 @@ import { IsEnum, IsInt, IsNotEmpty, IsOptional } from "class-validator";
 import { QuestionType } from "../entities/Question.js";
 
 export class CreateQuestionDto {
-    @IsNotEmpty()
-    text!: string;
+  @IsNotEmpty()
+  text!: string;
 
-    @IsNotEmpty()
-    correctAnswer!: string;
+  @IsNotEmpty()
+  correctAnswer!: string;
 
-    @IsInt()
-    @IsNotEmpty()
-    categoryId!: number;
+  @IsInt()
+  @IsNotEmpty()
+  categoryId!: number;
 
-    @IsOptional()
-    @IsEnum(QuestionType)
-    type: QuestionType = QuestionType.CLASSIC;
+  @IsOptional()
+  @IsEnum(QuestionType)
+  type: QuestionType = QuestionType.CLASSIC;
 
-    @IsOptional()
-    @IsInt()
-    mediaId?: number;
+  @IsOptional()
+  @IsInt()
+  mediaId?: number;
 }

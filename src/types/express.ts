@@ -1,11 +1,12 @@
-import { User } from '../entities/User.js';
+import { User } from "../entities/User.js";
 
 declare global {
-    namespace Express {
-        interface Request {
-            user?: User;
-        }
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- required by Express's own type augmentation pattern
+  namespace Express {
+    interface Request {
+      user?: User;
     }
+  }
 }
 
 export {};

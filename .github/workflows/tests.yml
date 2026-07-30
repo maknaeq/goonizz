@@ -61,7 +61,7 @@ jobs:
         uses: usebruno/bruno-cli-action@v1
         with:
           working-directory: bruno/Goonizz
-          command: 'run --env Local -r --exclude-tags ws'
+          command: "run --env Local -r --exclude-tags ws"
 
       - name: Stop app stack
         if: always()

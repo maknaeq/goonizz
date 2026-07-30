@@ -1,34 +1,28 @@
-import {
-    BaseEntity,
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn
-} from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 
 @Entity()
 export class Media extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Column()
-    path!: string;
+  @Column()
+  path!: string;
 
-    @Column()
-    mimetype!: string;
+  @Column()
+  mimetype!: string;
 
-    @Column({ nullable: true })
-    width?: number;
+  @Column({ nullable: true })
+  width?: number;
 
-    @Column({ nullable: true })
-    height?: number;
+  @Column({ nullable: true })
+  height?: number;
 
-    @Column({ type: 'float', nullable: true })
-    duration?: number;
+  @Column({ type: "float", nullable: true })
+  duration?: number;
 
-    @Column()
-    size!: number;
+  @Column()
+  size!: number;
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 }
